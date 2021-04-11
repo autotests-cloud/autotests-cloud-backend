@@ -1,21 +1,14 @@
 package com.example.demo.models;
 
-import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Data
-@Builder
+@NoArgsConstructor
 public class Order {
-    public Order() {
-    }
 
-    String content;
-    String price;
-
-    public Order(String content, String price) {
-        this.content = content;
-        this.price = price;
-    }
-
+    private String price;
+    private String email;
+    private String content;
 
 }

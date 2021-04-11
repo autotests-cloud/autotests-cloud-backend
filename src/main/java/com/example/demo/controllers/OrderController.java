@@ -1,6 +1,8 @@
 package com.example.demo.controllers;
 
 import com.example.demo.models.Order;
+import com.example.demo.services.TelegramService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -11,6 +13,9 @@ import java.util.List;
 @RequestMapping("orders")
 public class OrderController {
 
+    @Autowired
+    TelegramService telegramService;
+
     @GetMapping
     public ResponseEntity<List<Order>> getOrders() {
 
@@ -19,12 +24,12 @@ public class OrderController {
 
     @PostMapping
     public ResponseEntity<Order> createOrder(@RequestBody Order order) {
-
+        telegramService.notifyOrder(order);
         return new ResponseEntity<>(order, HttpStatus.CREATED);
     }
 
-    @GetMapping("/{login}")
-    public ResponseEntity<Order> getOrderById(@PathVariable String login) {
+    @GetMapping("/{order}")
+    public ResponseEntity<Order> getOrderById(@PathVariable String order) {
         // return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         return new ResponseEntity<>(new Order(), HttpStatus.OK);
     }
@@ -35,7 +40,7 @@ public class OrderController {
         return new ResponseEntity<>(order, HttpStatus.OK);
     }
 
-    @DeleteMapping("/{login}")
+    @DeleteMapping("/{order}")
     public ResponseEntity deleteOrder(@PathVariable String order) {
 
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
