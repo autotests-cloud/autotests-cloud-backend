@@ -30,7 +30,7 @@ dependencies {
     implementation 'com.konghq:unirest-java:3.11.11'
 
     implementation 'com.h2database:h2:1.3.148'
-    implementation 'org.liquibase:liquibase-core'
+//    implementation 'org.liquibase:liquibase-core'
     runtimeOnly 'org.postgresql:postgresql'
 
     annotationProcessor 'org.projectlombok:lombok:1.18.4'
