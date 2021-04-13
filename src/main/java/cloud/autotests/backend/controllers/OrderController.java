@@ -23,9 +23,14 @@ public class OrderController {
     }
 
     @PostMapping
-    public ResponseEntity<Order> createOrder(@RequestBody Order order) {
-        telegramService.notifyOrder(order);
-        return new ResponseEntity<>(order, HttpStatus.CREATED);
+    public ResponseEntity createOrder(@RequestBody Order order) {
+        // String issue = jiraService.createIssue();
+//        telegramService.notifyOrder(order, issue);
+        Integer messageId =  telegramService.notifyOrder(order);
+        if(messageId == null) {
+            return new ResponseEntity<>("Cant send telegram message", HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+        return new ResponseEntity<>(messageId, HttpStatus.CREATED);
     }
 
     @GetMapping("/{order}")
