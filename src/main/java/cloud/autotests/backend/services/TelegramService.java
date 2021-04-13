@@ -1,10 +1,9 @@
-package com.example.demo.services;
+package cloud.autotests.backend.services;
 
-import com.example.demo.config.TelegramConfig;
-import com.example.demo.models.Order;
+import cloud.autotests.backend.config.TelegramConfig;
+import cloud.autotests.backend.models.Order;
 import kong.unirest.Unirest;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
 
 //@Service
 public class TelegramService {

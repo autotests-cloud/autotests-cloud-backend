@@ -1,4 +1,4 @@
-package com.example.demo;
+package cloud.autotests.backend;
 
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;

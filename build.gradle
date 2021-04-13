@@ -14,8 +14,8 @@ configurations {
     }
 }
 
-group = 'com.example'
-version = '0.0.1-SNAPSHOT'
+group = 'cloud.autotests'
+version = '0.0.1'
 sourceCompatibility = '11'
 
 def testcontainersVersion = "1.15.2"

@@ -1,4 +1,4 @@
-package com.example.demo.models;
+package cloud.autotests.backend.models;
 
 import lombok.Data;
 import lombok.NoArgsConstructor;

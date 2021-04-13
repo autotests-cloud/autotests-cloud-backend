@@ -1,6 +1,6 @@
-package com.example.demo;
+package cloud.autotests.backend;
 
-import com.example.demo.models.User;
+import cloud.autotests.backend.models.User;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.MediaType;

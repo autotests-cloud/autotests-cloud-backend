@@ -1,4 +1,4 @@
-package com.example.demo;
+package cloud.autotests.backend;
 
 import org.testcontainers.containers.PostgreSQLContainer;
 

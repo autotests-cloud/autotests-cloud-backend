@@ -1,7 +1,7 @@
-package com.example.demo.controllers;
+package cloud.autotests.backend.controllers;
 
-import com.example.demo.models.Order;
-import com.example.demo.services.TelegramService;
+import cloud.autotests.backend.models.Order;
+import cloud.autotests.backend.services.TelegramService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

@@ -1,4 +1,4 @@
-package com.example.demo;
+package cloud.autotests.backend;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
