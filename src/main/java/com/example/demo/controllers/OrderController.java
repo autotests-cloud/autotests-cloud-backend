@@ -9,7 +9,6 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-@CrossOrigin(maxAge = 3600)
 @RestController
 @RequestMapping("orders")
 public class OrderController {
@@ -23,7 +22,6 @@ public class OrderController {
         return new ResponseEntity<>(List.of(new Order(), new Order()), HttpStatus.OK);
     }
 
-    @CrossOrigin("https://autotests.cloud")
     @PostMapping
     public ResponseEntity<Order> createOrder(@RequestBody Order order) {
         telegramService.notifyOrder(order);
