@@ -1,4 +1,4 @@
-package com.example.demo;
+package cloud.autotests.backend;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;

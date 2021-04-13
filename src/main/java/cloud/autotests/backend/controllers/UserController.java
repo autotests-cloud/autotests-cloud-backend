@@ -1,6 +1,6 @@
-package com.example.demo.controllers;
+package cloud.autotests.backend.controllers;
 
-import com.example.demo.models.User;
+import cloud.autotests.backend.models.User;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;

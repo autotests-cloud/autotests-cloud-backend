@@ -1,9 +1,7 @@
-package com.example.demo.config;
+package cloud.autotests.backend.config;
 
-import com.example.demo.services.TelegramService;
 import lombok.Data;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
