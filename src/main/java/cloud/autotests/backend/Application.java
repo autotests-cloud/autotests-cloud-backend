@@ -19,7 +19,7 @@ public class Application {
 			@Override
 			public void addCorsMappings(CorsRegistry registry) {
 //				registry.addMapping("/greeting-javaconfig").allowedOrigins("http://localhost:8080");
-				registry.addMapping("/**").allowedOrigins("https://autotests.cloud");
+				registry.addMapping("/**");
 			}
 		};
 	}

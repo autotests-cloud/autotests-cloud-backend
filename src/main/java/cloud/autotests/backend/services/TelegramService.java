@@ -13,16 +13,16 @@ public class TelegramService {
     TelegramConfig telegramConfig;
 
     public Integer notifyOrder(Order order) {
-        return sendText(String.format("Here is new order. \n" +
-                        "Price: %s\n" +
-                        "Email: %s\n" +
-//                        "Issue: %s\n" +
-                        "Order message: %s",
+        return sendText(String.format("<u><b>Issue</b></u>: <a href=\"https://jira.autotests.cloud\">AT-253</a> \n" +
+                        "<u>Price</u>: %s\n" +
+                        "<u>Email</u>: %s\n\n" +
+                        "<u>Order message</u>: \n" +
+                        "<pre>%s</pre>",
                 order.getPrice(), order.getEmail(), order.getContent()));
     }
 
     private Integer sendText(String message) {
-        String body = String.format("chat_id=%s&text=%s&parse_mode=Markdown", telegramConfig.telegramChatId, message);
+        String body = String.format("chat_id=%s&text=%s&parse_mode=html", telegramConfig.telegramChatId, message);
         String url = String.format("https://api.telegram.org/bot%s/sendMessage", telegramConfig.telegramToken);
 
         JSONObject createMessageResponse = Unirest.post(url)
