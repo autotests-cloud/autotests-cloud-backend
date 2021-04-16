@@ -9,6 +9,7 @@ public class Order {
 
     private String price;
     private String email;
-    private String content;
+    private String steps;
+    private String title;
 
 }

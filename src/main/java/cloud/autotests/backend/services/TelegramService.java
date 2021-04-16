@@ -6,19 +6,18 @@ import kong.unirest.Unirest;
 import kong.unirest.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 
-//@Service
 public class TelegramService {
 
     @Autowired
     TelegramConfig telegramConfig;
 
-    public Integer notifyOrder(Order order) {
-        return sendText(String.format("<u><b>Issue</b></u>: <a href=\"https://jira.autotests.cloud\">AT-253</a> \n" +
-                        "<u>Price</u>: %s\n" +
-                        "<u>Email</u>: %s\n\n" +
-                        "<u>Order message</u>: \n" +
+    public Integer notifyOrder(Order order, String issueKey) {
+        return sendText(String.format("<u><b>Issue</b></u>: <a href=\"https://jira.autotests.cloud\">%s</a> \n" +
+                        "<u><b>Price</b></u>: %s\n" +
+                        "<u><b>Email</b></u>: %s\n\n" +
+                        "<u><b>Test title</b></u>: \n" +
                         "<pre>%s</pre>",
-                order.getPrice(), order.getEmail(), order.getContent()));
+                issueKey, order.getPrice(), order.getEmail(), order.getTitle()));
     }
 
     private Integer sendText(String message) {

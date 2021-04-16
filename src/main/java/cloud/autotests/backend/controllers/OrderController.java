@@ -1,6 +1,7 @@
 package cloud.autotests.backend.controllers;
 
 import cloud.autotests.backend.models.Order;
+import cloud.autotests.backend.services.JiraService;
 import cloud.autotests.backend.services.TelegramService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -15,6 +16,7 @@ public class OrderController {
 
     @Autowired
     TelegramService telegramService;
+    JiraService jiraService;
 
     @GetMapping
     public ResponseEntity<List<Order>> getOrders() {
@@ -24,12 +26,16 @@ public class OrderController {
 
     @PostMapping
     public ResponseEntity createOrder(@RequestBody Order order) {
-        // String issue = jiraService.createIssue();
-//        telegramService.notifyOrder(order, issue);
-        Integer messageId =  telegramService.notifyOrder(order);
-        if(messageId == null) {
+        String issueKey = jiraService.createTask(order);
+        if (issueKey == null) {
+            return new ResponseEntity<>("Cant create jira issue", HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+
+        Integer messageId = telegramService.notifyOrder(order, issueKey);
+        if (messageId == null) {
             return new ResponseEntity<>("Cant send telegram message", HttpStatus.INTERNAL_SERVER_ERROR);
         }
+
         return new ResponseEntity<>(messageId, HttpStatus.CREATED);
     }
 
