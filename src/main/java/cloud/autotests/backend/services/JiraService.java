@@ -1,6 +1,7 @@
 package cloud.autotests.backend.services;
 
 import cloud.autotests.backend.config.JiraConfig;
+import cloud.autotests.backend.config.TelegramConfig;
 import cloud.autotests.backend.models.Order;
 import com.atlassian.jira.rest.client.api.IssueRestClient;
 import com.atlassian.jira.rest.client.api.JiraRestClient;
@@ -20,54 +21,58 @@ import java.util.stream.StreamSupport;
 
 public class JiraService {
 
-    private final Long ISSUE_TYPE = 10002L;
-    private final String PROJECT_KEY = "TESTS";
+
     @Autowired
     JiraConfig jiraConfig;
+
+    private final Long ISSUE_TYPE = 10002L;
+    private final String PROJECT_KEY = "TESTS";
+
     private String username;
     private String password;
     private String jiraUrl;
     private JiraRestClient jiraRestClient;
 
-    private JiraService() {
-        this.username = jiraConfig.jiraUsername;
-        this.password = jiraConfig.jiraPassword;
-        this.jiraUrl = jiraConfig.jiraUrl;
+    @Autowired
+    public JiraService(JiraConfig jiraConfig) {
+        this.username = jiraConfig.getJiraUsername();
+        this.password = jiraConfig.getJiraPassword();
+        this.jiraUrl = jiraConfig.getJiraUrl();
         this.jiraRestClient = getJiraRestClient();
     }
 
     public static void main(String[] args) throws IOException {
-
-        JiraService myJiraClient = new JiraService();
-
-        final String issueKey = myJiraClient.createIssue("TESTS", 10002L, "Your first lesson 1");
-        myJiraClient.updateIssueDescription(issueKey, "This is description from my Jira Client");
-        Issue issue = myJiraClient.getIssue(issueKey);
-//        System.out.println(issue.getDescription());
 //
-//        myJiraClient.voteForAnIssue(issue);
+//        JiraService myJiraClient = new JiraService();
 //
-//        System.out.println(myJiraClient.getTotalVotesCount(issueKey));
+//        final String issueKey = myJiraClient.createIssue("TESTS", 10002L, "Your first lesson 1");
+//        myJiraClient.updateIssueDescription(issueKey, "This is description from my Jira Client");
+//        Issue issue = myJiraClient.getIssue(issueKey);
+////        System.out.println(issue.getDescription());
+////
+////        myJiraClient.voteForAnIssue(issue);
+////
+////        System.out.println(myJiraClient.getTotalVotesCount(issueKey));
+////
+//        myJiraClient.addComment(issue, "This is comment from my Jira Client");
 //
-        myJiraClient.addComment(issue, "This is comment from my Jira Client");
-
-
-        myJiraClient.assignIssue(issueKey, "svasenkov");
 //
-//        List<Comment> comments = myJiraClient.getAllComments(issueKey);
-//        comments.forEach(c -> System.out.println(c.getBody()));
+//        myJiraClient.assignIssue(issueKey, "svasenkov");
+////
+////        List<Comment> comments = myJiraClient.getAllComments(issueKey);
+////        comments.forEach(c -> System.out.println(c.getBody()));
+////
+////        myJiraClient.deleteIssue(issueKey, true);
 //
-//        myJiraClient.deleteIssue(issueKey, true);
-
-        myJiraClient.jiraRestClient.close();
+//        myJiraClient.jiraRestClient.close();
     }
 
     public String createTask(Order order) {
         String finalContent = String.format(
-                "<u><b>Price</b></u>: %s\n" +
-                        "<u><b>Email</b></u>: %s\n\n" +
-                        "<u><b>Test steps</b></u>: \n" +
-                        "<pre>%s</pre>",
+                "*Price*: %s\n" +
+                        "*Email*: %s\n\n" +
+                        "*Test steps*: \n" +
+                        "{code}%s{code}",
                 order.getPrice(), order.getEmail(), order.getTitle());
 
         String issueKey = createIssue(PROJECT_KEY, ISSUE_TYPE, order.getTitle());
@@ -83,10 +88,13 @@ public class JiraService {
     private String createIssue(String projectKey, Long issueType, String issueSummary) {
         IssueRestClient issueClient = jiraRestClient.getIssueClient();
 
-        IssueInput newIssue = new IssueInputBuilder(projectKey, issueType, issueSummary).build();
-        if (newIssue == null) // todo maybe not working
+        IssueInput issueInput = new IssueInputBuilder(projectKey, issueType, issueSummary).build();
+
+        String newIssueKey = issueClient.createIssue(issueInput).claim().getKey();
+        if (newIssueKey == null) // todo maybe not working
             return null;
-        return issueClient.createIssue(newIssue).claim().getKey();
+
+        return newIssueKey;
     }
 
     private Issue getIssue(String issueKey) {

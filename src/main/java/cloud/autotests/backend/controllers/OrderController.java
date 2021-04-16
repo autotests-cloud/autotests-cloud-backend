@@ -16,6 +16,8 @@ public class OrderController {
 
     @Autowired
     TelegramService telegramService;
+
+    @Autowired
     JiraService jiraService;
 
     @GetMapping
