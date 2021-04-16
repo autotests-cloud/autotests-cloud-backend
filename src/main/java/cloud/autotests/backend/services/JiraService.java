@@ -26,7 +26,7 @@ public class JiraService {
     JiraConfig jiraConfig;
 
     private final Long ISSUE_TYPE = 10002L;
-    private final String PROJECT_KEY = "TESTS";
+    private final String PROJECT_KEY = "HOM";
 
     private String username;
     private String password;
@@ -73,7 +73,7 @@ public class JiraService {
                         "*Email*: %s\n\n" +
                         "*Test steps*: \n" +
                         "{code}%s{code}",
-                order.getPrice(), order.getEmail(), order.getTitle());
+                order.getPrice(), order.getEmail(), order.getSteps());
 
         String issueKey = createIssue(PROJECT_KEY, ISSUE_TYPE, order.getTitle());
         if (issueKey == null)
