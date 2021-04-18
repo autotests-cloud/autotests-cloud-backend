@@ -10,6 +10,9 @@ public class TelegramConfig {
     @Value("${telegram.token}")
     public String telegramToken;
 
+    @Value("${telegram.channel.id}")
+    public String telegramChannelId;
+
     @Value("${telegram.chat.id}")
     public String telegramChatId;
 }

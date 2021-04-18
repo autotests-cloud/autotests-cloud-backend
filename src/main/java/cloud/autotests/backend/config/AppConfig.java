@@ -8,9 +8,13 @@ import org.springframework.context.annotation.Configuration;
 
 @Configuration
 public class AppConfig {
+
+    @Autowired
+    TelegramConfig telegramConfig;
+
     @Bean
     TelegramService telegramService() {
-        return new TelegramService();
+        return new TelegramService(telegramConfig);
     }
 
     @Autowired

@@ -8,23 +8,42 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 public class TelegramService {
 
-    @Autowired
-    TelegramConfig telegramConfig;
+    private String channelId;
+    private String chatId;
+    private String sendMessageUrl;
 
-    public Integer notifyOrder(Order order, String issueKey) {
-        return sendText(String.format("<u><b>Issue</b></u>: <a href=\"https://jira.autotests.cloud/browse/%s\">%s</a> \n" +
+    @Autowired
+    public TelegramService(TelegramConfig telegramConfig) {
+        this.channelId = telegramConfig.getTelegramChannelId();
+        this.chatId = telegramConfig.getTelegramChatId();
+        this.sendMessageUrl = String.format("https://api.telegram.org/bot%s/sendMessage", telegramConfig.telegramToken);
+    }
+
+    public Integer createChannelPost(Order order, String issueKey) {
+        String message = String.format("<u><b>Issue</b></u>: <a href=\"https://jira.autotests.cloud/browse/%s\">%s</a> \n" +
                         "<u><b>Price</b></u>: %s\n" +
                         "<u><b>Email</b></u>: %s\n\n" +
                         "<u><b>Test title</b></u>: \n" +
                         "<pre>%s</pre>",
-                issueKey, issueKey, order.getPrice(), order.getEmail(), order.getTitle()));
+                issueKey, issueKey, order.getPrice(), order.getEmail(), order.getTitle());
+
+        String body = String.format("chat_id=%s&text=%s&parse_mode=html", this.channelId, message);
+
+        return sendText(body);
     }
 
-    private Integer sendText(String message) {
-        String body = String.format("chat_id=%s&text=%s&parse_mode=html", telegramConfig.telegramChatId, message);
-        String url = String.format("https://api.telegram.org/bot%s/sendMessage", telegramConfig.telegramToken);
+    public Integer addOnboardingMessage(Integer channelPostId) {
+        String message = String.format("Hello, my friend!\n\n" +
+                        "Leave any message here, to get notified, when autotests get ready!");
 
-        JSONObject createMessageResponse = Unirest.post(url)
+        String body = String.format("chat_id=%s&reply_to_message_id=%s&text=%s&parse_mode=html",
+                channelPostId, this.chatId, message);
+
+        return sendText(body);
+    }
+
+    private Integer sendText(String body) {
+        JSONObject createMessageResponse = Unirest.post(this.sendMessageUrl)
                 .header("Content-Type", "application/x-www-form-urlencoded; charset=utf-8")
                 .body(body)
                 .asJson()

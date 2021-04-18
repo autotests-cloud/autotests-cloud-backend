@@ -1,7 +1,6 @@
 package cloud.autotests.backend.services;
 
 import cloud.autotests.backend.config.JiraConfig;
-import cloud.autotests.backend.config.TelegramConfig;
 import cloud.autotests.backend.models.Order;
 import com.atlassian.jira.rest.client.api.IssueRestClient;
 import com.atlassian.jira.rest.client.api.JiraRestClient;
@@ -21,23 +20,19 @@ import java.util.stream.StreamSupport;
 
 public class JiraService {
 
-
-    @Autowired
-    JiraConfig jiraConfig;
-
     private final Long ISSUE_TYPE = 10002L;
     private final String PROJECT_KEY = "HOM";
 
+    private String jiraUrl;
     private String username;
     private String password;
-    private String jiraUrl;
     private JiraRestClient jiraRestClient;
 
     @Autowired
     public JiraService(JiraConfig jiraConfig) {
+        this.jiraUrl = jiraConfig.getJiraUrl();
         this.username = jiraConfig.getJiraUsername();
         this.password = jiraConfig.getJiraPassword();
-        this.jiraUrl = jiraConfig.getJiraUrl();
         this.jiraRestClient = getJiraRestClient();
     }
 

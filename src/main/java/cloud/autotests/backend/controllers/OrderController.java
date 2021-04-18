@@ -10,6 +10,8 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+import static java.lang.Thread.sleep;
+
 @RestController
 @RequestMapping("orders")
 public class OrderController {
@@ -27,18 +29,24 @@ public class OrderController {
     }
 
     @PostMapping
-    public ResponseEntity createOrder(@RequestBody Order order) {
+    public ResponseEntity createOrder(@RequestBody Order order) throws InterruptedException {
         String issueKey = jiraService.createTask(order);
         if (issueKey == null) {
             return new ResponseEntity<>("Cant create jira issue", HttpStatus.INTERNAL_SERVER_ERROR);
         }
 
-        Integer messageId = telegramService.notifyOrder(order, issueKey);
-        if (messageId == null) {
-            return new ResponseEntity<>("Cant send telegram message", HttpStatus.INTERNAL_SERVER_ERROR);
+        Integer channelPostId = telegramService.createChannelPost(order, issueKey);
+        if (channelPostId == null) {
+            return new ResponseEntity<>("Cant create telegram channel post", HttpStatus.INTERNAL_SERVER_ERROR);
         }
 
-        return new ResponseEntity<>(messageId, HttpStatus.CREATED);
+//        sleep(1000);
+//        Integer onboardingMessageId = telegramService.addOnboardingMessage(channelPostId);
+//        if (onboardingMessageId == null) {
+//            return new ResponseEntity<>("Cant add comment to telegram channel post", HttpStatus.INTERNAL_SERVER_ERROR);
+//        }
+
+        return new ResponseEntity<>(channelPostId, HttpStatus.CREATED);
     }
 
     @GetMapping("/{order}")
