@@ -10,9 +10,12 @@ public class GithubConfig {
     @Value("${github.token}")
     public String githubToken;
 
+    @Value("${github.template.owner}")
+    public String githubTemplateOwner;
+
     @Value("${github.template.repository}")
     public String githubTemplateRepository;
 
-    @Value("${github.template.generate.owner}")
-    public String githubTemplateGenerateOwner;
+    @Value("${github.generated.owner}")
+    public String githubGeneratedOwner;
 }

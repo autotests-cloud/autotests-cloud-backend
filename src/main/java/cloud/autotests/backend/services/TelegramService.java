@@ -35,6 +35,21 @@ public class TelegramService {
         return sendText(body);
     }
 
+
+    public Integer createChannelPost(Order order, String issueKey, String githubTestUrl) {
+        String message = String.format("<u><b>Issue</b></u>: <a href=\"https://jira.autotests.cloud/browse/%s\">%s</a> \n" +
+                        "<u><b>Github link</b></u>: %s\n" +
+                        "<u><b>Price</b></u>: %s\n" +
+                        "<u><b>Email</b></u>: %s\n\n" +
+                        "<u><b>Test title</b></u>: \n" +
+                        "<pre>%s</pre>",
+                issueKey, issueKey, githubTestUrl, order.getPrice(), order.getEmail(), order.getTitle());
+
+        String body = String.format("chat_id=%s&text=%s&parse_mode=html", this.channelId, message);
+
+        return sendText(body);
+    }
+
     public Integer addOnboardingMessage(Integer channelPostId) {
         String message = String.format("Hello, my friend!\n\n" +
                         "Leave any message here, to get notified, when autotests get ready!");

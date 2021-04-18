@@ -34,21 +34,27 @@ public class OrderController {
 
     @PostMapping
     public ResponseEntity createOrder(@RequestBody Order order) throws InterruptedException {
-//        String jiraIssueKey = jiraService.createTask(order);
-//        if (jiraIssueKey == null) {
-//            return new ResponseEntity<>("Cant create jira issue", HttpStatus.INTERNAL_SERVER_ERROR);
-//        }
+        String jiraIssueKey = jiraService.createTask(order);
+        if (jiraIssueKey == null) {
+            return new ResponseEntity<>("Cant create jira issue", HttpStatus.INTERNAL_SERVER_ERROR);
+        }
 
-        String githubRepositoryUrl = githubService.createRepositoryFromTemplate("TM-143");
-//        String githubRepositoryUrl = githubService.createRepoFromTemplate(jiraIssueKey);
+        String githubRepositoryUrl = githubService.createRepositoryFromTemplate(jiraIssueKey);
         if (githubRepositoryUrl == null) {
             return new ResponseEntity<>("Cant create github repository", HttpStatus.INTERNAL_SERVER_ERROR);
         }
 
-//        Integer telegramChannelPostId = telegramService.createChannelPost(order, jiraIssueKey);
-//        if (telegramChannelPostId == null) {
-//            return new ResponseEntity<>("Cant create telegram channel post", HttpStatus.INTERNAL_SERVER_ERROR);
-//        }
+        String githubTestsUrl = githubService.generateTests(order, jiraIssueKey);
+        if (githubTestsUrl == null) {
+            return new ResponseEntity<>("Cant create tests class in github", HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+
+        Integer telegramChannelPostId = telegramService.createChannelPost(order, jiraIssueKey, githubTestsUrl);
+        if (telegramChannelPostId == null) {
+            return new ResponseEntity<>("Cant create telegram channel post", HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+
+        // todo update jira issue with github & telegram links
 
 //        sleep(1000);
 //        Integer onboardingMessageId = telegramService.addOnboardingMessage(channelPostId);
@@ -56,7 +62,7 @@ public class OrderController {
 //            return new ResponseEntity<>("Cant add comment to telegram channel post", HttpStatus.INTERNAL_SERVER_ERROR);
 //        }
 
-        return new ResponseEntity<>(githubRepositoryUrl, HttpStatus.CREATED);
+        return new ResponseEntity<>(telegramChannelPostId, HttpStatus.CREATED);
     }
 
     @GetMapping("/{order}")
