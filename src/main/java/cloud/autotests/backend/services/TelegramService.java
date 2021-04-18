@@ -11,9 +11,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class TelegramService {
     private static final Logger LOG = LoggerFactory.getLogger(TelegramService.class);
 
-    private String channelId;
-    private String chatId;
-    private String sendMessageUrl;
+    private final String channelId;
+    private final String chatId;
+    private final String sendMessageUrl;
 
     @Autowired
     public TelegramService(TelegramConfig telegramConfig) {
@@ -23,12 +23,11 @@ public class TelegramService {
     }
 
     public Integer createChannelPost(Order order, String issueKey) {
-        String message = String.format("<u><b>Issue</b></u>: <a href=\"https://jira.autotests.cloud/browse/%s\">%s</a> \n" +
-                        "<u><b>Price</b></u>: %s\n" +
-                        "<u><b>Email</b></u>: %s\n\n" +
-                        "<u><b>Test title</b></u>: \n" +
-                        "<pre>%s</pre>",
-                issueKey, issueKey, order.getPrice(), order.getEmail(), order.getTitle());
+        String message = String.format(
+                "<u><b>Test title</b></u>: <pre>%s</pre>\n",
+                "<u><b>Price</b></u>: [%s]\n" +
+                "<u><b>Jira ssue</b></u>: <a href=\"https://jira.autotests.cloud/browse/%s\">%s</a>\n",
+                order.getTitle(), order.getPrice(), issueKey, issueKey); // todo email
 
         String body = String.format("chat_id=%s&text=%s&parse_mode=html", this.channelId, message);
 
@@ -37,13 +36,13 @@ public class TelegramService {
 
 
     public Integer createChannelPost(Order order, String issueKey, String githubTestUrl) {
-        String message = String.format("<u><b>Issue</b></u>: <a href=\"https://jira.autotests.cloud/browse/%s\">%s</a> \n" +
-                        "<u><b>Github link</b></u>: %s\n" +
-                        "<u><b>Price</b></u>: %s\n" +
-                        "<u><b>Email</b></u>: %s\n\n" +
-                        "<u><b>Test title</b></u>: \n" +
-                        "<pre>%s</pre>",
-                issueKey, issueKey, githubTestUrl, order.getPrice(), order.getEmail(), order.getTitle());
+        String message = String.format(
+                "<u><b>Test title</b></u>: <pre>%s</pre>\n",
+                "<u><b>Price</b></u>: [%s]\n" +
+                "<u><b>Jira ssue</b></u>: <a href=\"https://jira.autotests.cloud/browse/%s\">%s</a>\n" +
+                "<u><b>Github link</b></u>:\n" +
+                "%s",
+                order.getTitle(), order.getPrice(), issueKey, issueKey, githubTestUrl); // todo email
 
         String body = String.format("chat_id=%s&text=%s&parse_mode=html", this.channelId, message);
 
@@ -51,8 +50,8 @@ public class TelegramService {
     }
 
     public Integer addOnboardingMessage(Integer channelPostId) {
-        String message = String.format("Hello, my friend!\n\n" +
-                        "Leave any message here, to get notified, when autotests get ready!");
+        String message = "Hello, my friend!\n\n" +
+                "Leave any message here, to get notified, when autotests get ready!";
 
         String body = String.format("chat_id=%s&reply_to_message_id=%s&text=%s&parse_mode=html",
                 channelPostId, this.chatId, message);

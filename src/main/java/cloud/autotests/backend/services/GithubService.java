@@ -18,10 +18,9 @@ public class GithubService {
     private final String NEW_TEST_REPOSITORY_PATH = "https://api.github.com/repos/%s/%s/contents/" +
             "src/test/java/cloud/autotests/tests/AppTests.java";
 
-
-    private String githubToken;
-    private String githubTemplateRepositoryApiUrl;
-    private String githubGeneratedOwner;
+    private final String githubToken;
+    private final String githubTemplateRepositoryApiUrl;
+    private final String githubGeneratedOwner;
 
     @Autowired
     public GithubService(GithubConfig githubConfig) {
@@ -87,7 +86,7 @@ public class GithubService {
                 .body(body)
                 .asJson()
                 .ifFailure(response -> {
-                    LOG.error("Oh No! Status" + response.getStatus());
+                    LOG.error("[createTestsResponse] Oh No! Status" + response.getStatus());
                     LOG.error(response.getStatusText());
                     LOG.error(response.getBody().toPrettyString());
                     response.getParsingError().ifPresent(e -> {

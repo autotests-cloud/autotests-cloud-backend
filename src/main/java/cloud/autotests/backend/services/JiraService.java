@@ -12,7 +12,6 @@ import com.atlassian.jira.rest.client.api.domain.input.IssueInputBuilder;
 import com.atlassian.jira.rest.client.internal.async.AsynchronousJiraRestClientFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import java.io.IOException;
 import java.net.URI;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -23,10 +22,10 @@ public class JiraService {
     private final Long ISSUE_TYPE = 10002L;
     private final String PROJECT_KEY = "HOM";
 
-    private String jiraUrl;
-    private String username;
-    private String password;
-    private JiraRestClient jiraRestClient;
+    private final String jiraUrl;
+    private final String username;
+    private final String password;
+    private final JiraRestClient jiraRestClient;
 
     @Autowired
     public JiraService(JiraConfig jiraConfig) {
@@ -36,7 +35,7 @@ public class JiraService {
         this.jiraRestClient = getJiraRestClient();
     }
 
-    public static void main(String[] args) throws IOException {
+//    public static void main(String[] args) throws IOException {
 //
 //        JiraService myJiraClient = new JiraService();
 //
@@ -51,7 +50,6 @@ public class JiraService {
 ////
 //        myJiraClient.addComment(issue, "This is comment from my Jira Client");
 //
-//
 //        myJiraClient.assignIssue(issueKey, "svasenkov");
 ////
 ////        List<Comment> comments = myJiraClient.getAllComments(issueKey);
@@ -60,14 +58,14 @@ public class JiraService {
 ////        myJiraClient.deleteIssue(issueKey, true);
 //
 //        myJiraClient.jiraRestClient.close();
-    }
+//    }
 
     public String createTask(Order order) {
         String finalContent = String.format(
                 "*Price*: %s\n" +
-                "*Email*: %s\n\n" +
-                "*Test steps*: \n" +
-                "{code}%s{code}",
+                        "*Email*: %s\n\n" +
+                        "*Test steps*: \n" +
+                        "{code}%s{code}",
                 order.getPrice(), order.getEmail(), order.getSteps());
 
         String issueKey = createIssue(PROJECT_KEY, ISSUE_TYPE, order.getTitle());

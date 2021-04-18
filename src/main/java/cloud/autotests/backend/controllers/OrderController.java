@@ -44,6 +44,7 @@ public class OrderController {
             return new ResponseEntity<>("Cant create github repository", HttpStatus.INTERNAL_SERVER_ERROR);
         }
 
+        sleep(2000);
         String githubTestsUrl = githubService.generateTests(order, jiraIssueKey);
         if (githubTestsUrl == null) {
             return new ResponseEntity<>("Cant create tests class in github", HttpStatus.INTERNAL_SERVER_ERROR);
