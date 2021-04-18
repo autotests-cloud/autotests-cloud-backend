@@ -8,7 +8,7 @@ import java.io.IOException;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.apache.commons.io.FileUtils.readFileToString;
 
-public class Utils { // todo beautify
+public class Utils { // todo not working with docker
     public static File readFileFromClassPath(String filePath) throws IOException {
         return new ClassPathResource(filePath).getFile();
     }

@@ -1,5 +1,6 @@
 package cloud.autotests.backend.services;
 
+import cloud.autotests.backend.builders.TestBuilder;
 import cloud.autotests.backend.config.GithubConfig;
 import cloud.autotests.backend.models.Order;
 import kong.unirest.Unirest;
@@ -10,16 +11,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.Base64;
 
-import static cloud.autotests.backend.utils.Utils.readStringFromFile;
-
 public class GithubService {
     private static final Logger LOG = LoggerFactory.getLogger(GithubService.class);
 
     private final String TEMPLATE_REPOSITORY_URL = "https://api.github.com/repos/%s/%s/generate";
     private final String NEW_TEST_REPOSITORY_PATH = "https://api.github.com/repos/%s/%s/contents/" +
             "src/test/java/cloud/autotests/tests/AppTests.java";
-    private final String TEST_CLASS_TEMPLATE_PATH = "github/AppTests.java.tpl";
-    private final String TEST_STEP_TEMPLATE_PATH = "github/step.tpl";
+
 
     private String githubToken;
     private String githubTemplateRepositoryApiUrl;
@@ -75,7 +73,7 @@ public class GithubService {
 
     public String generateTests(Order order, String jiraIssueKey) {
         String testClassPath = String.format(NEW_TEST_REPOSITORY_PATH, this.githubGeneratedOwner, jiraIssueKey);
-        String testClassContent = generateTestClass(order);
+        String testClassContent = new TestBuilder().generateTestClass(order); // todo rude
         String testClassContent64 = Base64.getEncoder().encodeToString(testClassContent.getBytes());
 
         String bodyTemplate = "{\"message\": \"Added test '%s'\", \"content\": \"%s\"}";
@@ -115,23 +113,4 @@ public class GithubService {
         return null;
     }
 
-    private String generateTestClass(Order order) { // todo add link to Jira issue
-        String testTemplateContent = readStringFromFile(TEST_CLASS_TEMPLATE_PATH);
-        StringBuilder generatedSteps = new StringBuilder();
-        String orderSteps = order.getSteps() // todo move do model ?
-                .replace("\r\n", "\n")
-                .replace("\r", "\n");
-        String[] steps = orderSteps.split("\n");
-        for (String step: steps) {
-            generatedSteps.append(generateStep(step));
-        }
-
-        return String.format(testTemplateContent, order.getTitle(), generatedSteps);
-    }
-
-    private String generateStep(String step) {
-        String stepTemplate = readStringFromFile(TEST_STEP_TEMPLATE_PATH);
-
-        return String.format(stepTemplate, step);
-    }
 }
