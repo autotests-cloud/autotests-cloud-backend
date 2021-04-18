@@ -4,9 +4,12 @@ import cloud.autotests.backend.config.TelegramConfig;
 import cloud.autotests.backend.models.Order;
 import kong.unirest.Unirest;
 import kong.unirest.json.JSONObject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 public class TelegramService {
+    private static final Logger LOG = LoggerFactory.getLogger(TelegramService.class);
 
     private String channelId;
     private String chatId;
@@ -47,6 +50,15 @@ public class TelegramService {
                 .header("Content-Type", "application/x-www-form-urlencoded; charset=utf-8")
                 .body(body)
                 .asJson()
+                .ifFailure(response -> {
+                    LOG.error("Oh No! Status" + response.getStatus());
+                    LOG.error(response.getStatusText());
+                    LOG.error(response.getBody().toPrettyString());
+                    response.getParsingError().ifPresent(e -> {
+                        LOG.error("Parsing Exception: ", e);
+                        LOG.error("Original body: " + e.getOriginalBody());
+                    });
+                })
                 .getBody()
                 .getObject();
 

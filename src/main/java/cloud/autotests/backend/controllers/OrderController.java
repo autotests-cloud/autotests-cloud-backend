@@ -1,6 +1,7 @@
 package cloud.autotests.backend.controllers;
 
 import cloud.autotests.backend.models.Order;
+import cloud.autotests.backend.services.GithubService;
 import cloud.autotests.backend.services.JiraService;
 import cloud.autotests.backend.services.TelegramService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,10 +18,13 @@ import static java.lang.Thread.sleep;
 public class OrderController {
 
     @Autowired
-    TelegramService telegramService;
+    JiraService jiraService;
 
     @Autowired
-    JiraService jiraService;
+    GithubService githubService;
+
+    @Autowired
+    TelegramService telegramService;
 
     @GetMapping
     public ResponseEntity<List<Order>> getOrders() {
@@ -30,15 +34,21 @@ public class OrderController {
 
     @PostMapping
     public ResponseEntity createOrder(@RequestBody Order order) throws InterruptedException {
-        String issueKey = jiraService.createTask(order);
-        if (issueKey == null) {
-            return new ResponseEntity<>("Cant create jira issue", HttpStatus.INTERNAL_SERVER_ERROR);
+//        String jiraIssueKey = jiraService.createTask(order);
+//        if (jiraIssueKey == null) {
+//            return new ResponseEntity<>("Cant create jira issue", HttpStatus.INTERNAL_SERVER_ERROR);
+//        }
+
+        String githubRepositoryUrl = githubService.createRepositoryFromTemplate("TM-143");
+//        String githubRepositoryUrl = githubService.createRepoFromTemplate(jiraIssueKey);
+        if (githubRepositoryUrl == null) {
+            return new ResponseEntity<>("Cant create github repository", HttpStatus.INTERNAL_SERVER_ERROR);
         }
 
-        Integer channelPostId = telegramService.createChannelPost(order, issueKey);
-        if (channelPostId == null) {
-            return new ResponseEntity<>("Cant create telegram channel post", HttpStatus.INTERNAL_SERVER_ERROR);
-        }
+//        Integer telegramChannelPostId = telegramService.createChannelPost(order, jiraIssueKey);
+//        if (telegramChannelPostId == null) {
+//            return new ResponseEntity<>("Cant create telegram channel post", HttpStatus.INTERNAL_SERVER_ERROR);
+//        }
 
 //        sleep(1000);
 //        Integer onboardingMessageId = telegramService.addOnboardingMessage(channelPostId);
@@ -46,7 +56,7 @@ public class OrderController {
 //            return new ResponseEntity<>("Cant add comment to telegram channel post", HttpStatus.INTERNAL_SERVER_ERROR);
 //        }
 
-        return new ResponseEntity<>(channelPostId, HttpStatus.CREATED);
+        return new ResponseEntity<>(githubRepositoryUrl, HttpStatus.CREATED);
     }
 
     @GetMapping("/{order}")

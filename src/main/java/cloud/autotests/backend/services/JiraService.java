@@ -65,9 +65,9 @@ public class JiraService {
     public String createTask(Order order) {
         String finalContent = String.format(
                 "*Price*: %s\n" +
-                        "*Email*: %s\n\n" +
-                        "*Test steps*: \n" +
-                        "{code}%s{code}",
+                "*Email*: %s\n\n" +
+                "*Test steps*: \n" +
+                "{code}%s{code}",
                 order.getPrice(), order.getEmail(), order.getSteps());
 
         String issueKey = createIssue(PROJECT_KEY, ISSUE_TYPE, order.getTitle());
