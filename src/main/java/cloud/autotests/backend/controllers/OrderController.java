@@ -55,7 +55,10 @@ public class OrderController {
             return new ResponseEntity<>("Cant create telegram channel post", HttpStatus.INTERNAL_SERVER_ERROR);
         }
 
-        // todo update jira issue with github & telegram links
+        Boolean jiraUpdateIssueResult = jiraService.updateTask(order, jiraIssueKey, githubTestsUrl, telegramChannelPostId);
+        if (jiraUpdateIssueResult == null) {
+            return new ResponseEntity<>("Cant update jira issue", HttpStatus.INTERNAL_SERVER_ERROR);
+        }
 
 //        sleep(1000);
 //        Integer onboardingMessageId = telegramService.addOnboardingMessage(channelPostId);

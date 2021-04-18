@@ -61,20 +61,23 @@ public class JiraService {
 //    }
 
     public String createTask(Order order) {
-        String finalContent = String.format(
+        return createIssue(PROJECT_KEY, ISSUE_TYPE, order.getTitle());
+    }
+
+    public Boolean updateTask(Order order, String issueKey, String githubTestsUrl, Integer telegramChannelPostId) {
+        String jenkinsJobUrl = "https://jenkins.autotests.cloud/job/" + issueKey;
+        String telegramChannelUrl = "https://t.me/autotests_cloud/" + telegramChannelPostId;
+        String content = String.format(
                 "*Price*: %s\n" +
-                        "*Email*: %s\n\n" +
-                        "*Test steps*: \n" +
-                        "{code}%s{code}",
-                order.getPrice(), order.getEmail(), order.getSteps());
+                "*Email*: %s\n\n" +
+                "*Github code*: %s\n" +
+                "*Jenkins job*: %s\n" +
+                "*Telegram discussion*: %s\n\n" +
+                "*Test steps*: \n" +
+                "{code}%s{code}",
+                order.getPrice(), order.getEmail(), githubTestsUrl, jenkinsJobUrl, telegramChannelUrl, order.getSteps());
 
-        String issueKey = createIssue(PROJECT_KEY, ISSUE_TYPE, order.getTitle());
-        if (issueKey == null)
-            return null;
-
-        updateIssueDescription(issueKey, finalContent);
-
-        return issueKey;
+        return updateIssueDescription(issueKey, content);
     }
 
 
@@ -83,11 +86,7 @@ public class JiraService {
 
         IssueInput issueInput = new IssueInputBuilder(projectKey, issueType, issueSummary).build();
 
-        String newIssueKey = issueClient.createIssue(issueInput).claim().getKey();
-        if (newIssueKey == null) // todo maybe not working
-            return null;
-
-        return newIssueKey;
+        return issueClient.createIssue(issueInput).claim().getKey();
     }
 
     private Issue getIssue(String issueKey) {
@@ -117,9 +116,15 @@ public class JiraService {
                 .collect(Collectors.toList());
     }
 
-    private void updateIssueDescription(String issueKey, String newDescription) {
+    private Boolean updateIssueDescription(String issueKey, String newDescription) {
         IssueInput input = new IssueInputBuilder().setDescription(newDescription).build();
-        jiraRestClient.getIssueClient().updateIssue(issueKey, input).claim();
+        try {
+            jiraRestClient.getIssueClient().updateIssue(issueKey, input).claim();
+            return true; // todo maybe bad practice
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return false;
     }
 
     private void deleteIssue(String issueKey, boolean deleteSubtasks) {

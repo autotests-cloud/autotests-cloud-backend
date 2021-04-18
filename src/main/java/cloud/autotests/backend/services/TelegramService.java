@@ -24,7 +24,7 @@ public class TelegramService {
 
     public Integer createChannelPost(Order order, String issueKey) {
         String message = String.format(
-                "<u><b>Test title</b></u>: <pre>%s</pre>\n",
+                "<u><b>Test title</b></u>: <pre>%s</pre>\n" +
                 "<u><b>Price</b></u>: [%s]\n" +
                 "<u><b>Jira ssue</b></u>: <a href=\"https://jira.autotests.cloud/browse/%s\">%s</a>\n",
                 order.getTitle(), order.getPrice(), issueKey, issueKey); // todo email
@@ -37,12 +37,13 @@ public class TelegramService {
 
     public Integer createChannelPost(Order order, String issueKey, String githubTestUrl) {
         String message = String.format(
-                "<u><b>Test title</b></u>: <pre>%s</pre>\n",
+                "<u><b>Test title</b></u>: <pre>%s</pre>\n" +
                 "<u><b>Price</b></u>: [%s]\n" +
                 "<u><b>Jira ssue</b></u>: <a href=\"https://jira.autotests.cloud/browse/%s\">%s</a>\n" +
-                "<u><b>Github link</b></u>:\n" +
+                "<u><b>Jenkins job</b></u>: <a href=\"https://jenkins.autotests.cloud/job/%s\">%s</a>\n" +
+                "<u><b>Github code</b></u>:\n" +
                 "%s",
-                order.getTitle(), order.getPrice(), issueKey, issueKey, githubTestUrl); // todo email
+                order.getTitle(), order.getPrice(), issueKey, issueKey, issueKey, issueKey, githubTestUrl); // todo email
 
         String body = String.format("chat_id=%s&text=%s&parse_mode=html", this.channelId, message);
 
