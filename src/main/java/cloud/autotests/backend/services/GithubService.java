@@ -18,8 +18,8 @@ public class GithubService {
     private final String TEMPLATE_REPOSITORY_URL = "https://api.github.com/repos/%s/%s/generate";
     private final String NEW_TEST_REPOSITORY_PATH = "https://api.github.com/repos/%s/%s/contents/" +
             "src/test/java/cloud/autotests/tests/AppTests.java";
-    private final String TEST_CLASS_TEMPLATE_PATH = "./src/main/resources/github/AppTests.java.tpl";
-    private final String TEST_STEP_TEMPLATE_PATH = "./src/main/resources/github/step.tpl";
+    private final String TEST_CLASS_TEMPLATE_PATH = "github/AppTests.java.tpl";
+    private final String TEST_STEP_TEMPLATE_PATH = "github/step.tpl";
 
     private String githubToken;
     private String githubTemplateRepositoryApiUrl;
@@ -43,8 +43,6 @@ public class GithubService {
                 .header("Content-Type", "application/json; charset=utf-8")
                 .header("Authorization", "token " + this.githubToken)
                 .body(body)
-//                .field("owner", this.githubTemplateGenerateOwner)
-//                .field("name", jiraIssueKey)
                 .asJson()
                 .ifFailure(response -> {
                     LOG.error("Oh No! Status" + response.getStatus());
