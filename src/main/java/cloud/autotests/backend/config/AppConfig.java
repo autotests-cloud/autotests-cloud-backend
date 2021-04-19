@@ -33,7 +33,7 @@ public class AppConfig {
 
     @Bean
     JenkinsService jenkinsService() {
-        return new JenkinsService(jenkinsConfig);
+        return new JenkinsService(jenkinsConfig, telegramConfig);
     }
 
     @Autowired

@@ -2,6 +2,7 @@ package cloud.autotests.backend.controllers;
 
 import cloud.autotests.backend.models.Order;
 import cloud.autotests.backend.services.GithubService;
+import cloud.autotests.backend.services.JenkinsService;
 import cloud.autotests.backend.services.JiraService;
 import cloud.autotests.backend.services.TelegramService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,6 +23,9 @@ public class OrderController {
 
     @Autowired
     GithubService githubService;
+
+    @Autowired
+    JenkinsService jenkinsService;
 
     @Autowired
     TelegramService telegramService;
@@ -49,6 +53,9 @@ public class OrderController {
         if (githubTestsUrl == null) {
             return new ResponseEntity<>("Cant create tests class in github", HttpStatus.INTERNAL_SERVER_ERROR);
         }
+
+        jenkinsService.createJob(order, jiraIssueKey, githubRepositoryUrl);
+        jenkinsService.launchJob(jiraIssueKey);
 
         Integer telegramChannelPostId = telegramService.createChannelPost(order, jiraIssueKey, githubTestsUrl);
         if (telegramChannelPostId == null) {

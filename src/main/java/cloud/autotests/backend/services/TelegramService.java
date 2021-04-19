@@ -38,7 +38,7 @@ public class TelegramService {
 
     public Integer createChannelPost(Order order, String issueKey, String githubTestUrl) {
         String message = String.format(
-                "<u><b>Test title</b></u>: <pre>%s</pre>\n" +
+                "<u><b>Test title</b></u>: <code>%s</code>\n" +
                 "<u><b>Price</b></u>: [%s]\n" +
                 "<u><b>Jira ssue</b></u>: <a href=\"https://jira.autotests.cloud/browse/%s\">%s</a>\n" +
                 "<u><b>Jenkins job</b></u>: <a href=\"https://jenkins.autotests.cloud/job/%s\">%s</a>\n" +

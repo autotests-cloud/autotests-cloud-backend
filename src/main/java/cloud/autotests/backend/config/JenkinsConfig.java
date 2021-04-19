@@ -15,7 +15,4 @@ public class JenkinsConfig {
 
     @Value("${jenkins.token}")
     public String jenkinsToken;
-
-    @Value("${jenkins.template.job}")
-    public String jenkinsTemplateJob;
 }
