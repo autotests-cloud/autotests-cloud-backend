@@ -26,10 +26,10 @@ public String generateTestClass(Order order) { // todo add link to Jira issue
     }
 
     private String getTestClassTemplate() {
-        return readStringFromFile("src/main/resources/jira/AppTests.java.tpl");
+        return readStringFromFile("src/main/resources/github/AppTests.java.tpl");
     }
 
     private String getTestStepTemplate() {
-        return readStringFromFile("src/main/resources/jira/step.tpl");
+        return readStringFromFile("src/main/resources/github/step.tpl");
     }
 }
