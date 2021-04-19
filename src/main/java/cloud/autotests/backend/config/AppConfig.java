@@ -1,6 +1,7 @@
 package cloud.autotests.backend.config;
 
 import cloud.autotests.backend.services.GithubService;
+import cloud.autotests.backend.services.JenkinsService;
 import cloud.autotests.backend.services.JiraService;
 import cloud.autotests.backend.services.TelegramService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,6 +25,15 @@ public class AppConfig {
     @Bean
     GithubService githubService() {
         return new GithubService(githubConfig);
+    }
+
+
+    @Autowired
+    JenkinsConfig jenkinsConfig;
+
+    @Bean
+    JenkinsService jenkinsService() {
+        return new JenkinsService(jenkinsConfig);
     }
 
     @Autowired
