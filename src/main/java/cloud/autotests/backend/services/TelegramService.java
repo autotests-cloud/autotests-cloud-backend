@@ -11,6 +11,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class TelegramService {
     private static final Logger LOG = LoggerFactory.getLogger(TelegramService.class);
 
+    private final String SEND_MESSAGE_URL = "https://api.telegram.org/bot%s/sendMessage";
+
     private final String channelId;
     private final String chatId;
     private final String sendMessageUrl;
@@ -19,7 +21,7 @@ public class TelegramService {
     public TelegramService(TelegramConfig telegramConfig) {
         this.channelId = telegramConfig.getTelegramChannelId();
         this.chatId = telegramConfig.getTelegramChatId();
-        this.sendMessageUrl = String.format("https://api.telegram.org/bot%s/sendMessage", telegramConfig.telegramToken);
+        this.sendMessageUrl = String.format(SEND_MESSAGE_URL, telegramConfig.telegramToken);
     }
 
     public Integer createChannelPost(Order order, String issueKey) {
@@ -33,7 +35,6 @@ public class TelegramService {
 
         return sendText(body);
     }
-
 
     public Integer createChannelPost(Order order, String issueKey, String githubTestUrl) {
         String message = String.format(

@@ -26,32 +26,10 @@ public String generateTestClass(Order order) { // todo add link to Jira issue
     }
 
     private String getTestClassTemplate() {
-        return "package cloud.autotests.tests;\n" +
-                "\n" +
-                "import io.qameta.allure.*;\n" +
-                "import org.junit.jupiter.api.DisplayName;\n" +
-                "import org.junit.jupiter.api.Test;\n" +
-                "\n" +
-                "import static io.qameta.allure.Allure.step;\n" +
-                "\n" +
-                "@Epic(\"any\")\n" +
-                "@Feature(\"your\")\n" +
-                "@Story(\"metadata\")\n" +
-                "public class AppTests extends TestBase {\n" +
-                "\n" +
-                "    @Test\n" +
-                "    @Description(\"Soon to be implemented by QA.GURU engineers\")\n" +
-                "    @DisplayName(\"%s\")\n" +
-                "    void test() {\n" +
-                "%s\n" +
-                "    }\n" +
-                "}";
+        return readStringFromFile("./src/main/resources/jira/AppTests.java.tpl");
     }
 
     private String getTestStepTemplate() {
-        return "\n" +
-                "        step(\"%s\", () -> {\n" +
-                "            // todo\n" +
-                "        });\n";
+        return readStringFromFile("./src/main/resources/jira/step.tpl");
     }
 }

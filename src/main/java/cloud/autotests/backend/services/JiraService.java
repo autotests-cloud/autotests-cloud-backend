@@ -20,7 +20,7 @@ import java.util.stream.StreamSupport;
 public class JiraService {
 
     private final Long ISSUE_TYPE = 10002L;
-    private final String PROJECT_KEY = "HOM";
+    private final String PROJECT_KEY = "AUTO";
 
     private final String jiraUrl;
     private final String username;
