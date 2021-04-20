@@ -20,9 +20,9 @@ import java.util.stream.StreamSupport;
 public class JiraService {
 
     private final Long ISSUE_TYPE = 10002L;
-    private final String PROJECT_KEY = "AUTO";
 
     private final String jiraUrl;
+    private final String projectKey;
     private final String username;
     private final String password;
     private final JiraRestClient jiraRestClient;
@@ -30,6 +30,7 @@ public class JiraService {
     @Autowired
     public JiraService(JiraConfig jiraConfig) {
         this.jiraUrl = jiraConfig.getJiraUrl();
+        this.projectKey = jiraConfig.getProjectKey();
         this.username = jiraConfig.getJiraUsername();
         this.password = jiraConfig.getJiraPassword();
         this.jiraRestClient = getJiraRestClient();
@@ -61,7 +62,7 @@ public class JiraService {
 //    }
 
     public String createTask(Order order) {
-        return createIssue(PROJECT_KEY, ISSUE_TYPE, order.getTitle());
+        return createIssue(this.projectKey, ISSUE_TYPE, order.getTitle());
     }
 
     public Boolean updateTask(Order order, String issueKey, String githubTestsUrl, Integer telegramChannelPostId) {

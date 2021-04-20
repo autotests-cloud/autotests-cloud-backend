@@ -10,6 +10,9 @@ public class JiraConfig {
     @Value("${jira.url}")
     public String jiraUrl;
 
+    @Value("${jira.project.key}")
+    public String projectKey;
+
     @Value("${jira.username}")
     public String jiraUsername;
 

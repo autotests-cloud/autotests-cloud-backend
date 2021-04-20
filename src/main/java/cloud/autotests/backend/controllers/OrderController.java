@@ -67,11 +67,11 @@ public class OrderController {
             return new ResponseEntity<>("Cant update jira issue", HttpStatus.INTERNAL_SERVER_ERROR);
         }
 
-//        sleep(1000);
-//        Integer onboardingMessageId = telegramService.addOnboardingMessage(channelPostId);
-//        if (onboardingMessageId == null) {
-//            return new ResponseEntity<>("Cant add comment to telegram channel post", HttpStatus.INTERNAL_SERVER_ERROR);
-//        }
+        sleep(5000);
+        Integer telegramChatMessageId = telegramService.addOnBoardingMessage(telegramChannelPostId);
+        if (telegramChatMessageId == null) {
+            return new ResponseEntity<>("Cant add comment to telegram channel post", HttpStatus.INTERNAL_SERVER_ERROR);
+        }
 
         return new ResponseEntity<>(telegramChannelPostId, HttpStatus.CREATED);
     }

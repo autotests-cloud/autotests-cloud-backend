@@ -3,6 +3,7 @@ package cloud.autotests.backend.services;
 import cloud.autotests.backend.config.TelegramConfig;
 import cloud.autotests.backend.models.Order;
 import kong.unirest.Unirest;
+import kong.unirest.json.JSONArray;
 import kong.unirest.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -12,23 +13,26 @@ public class TelegramService {
     private static final Logger LOG = LoggerFactory.getLogger(TelegramService.class);
 
     private final String SEND_MESSAGE_URL = "https://api.telegram.org/bot%s/sendMessage";
+    private final String GET_UPDATES_URL = "https://api.telegram.org/bot%s/getUpdates";
 
     private final String channelId;
     private final String chatId;
     private final String sendMessageUrl;
+    private final String getUpdatesUrl;
 
     @Autowired
     public TelegramService(TelegramConfig telegramConfig) {
         this.channelId = telegramConfig.getTelegramChannelId();
         this.chatId = telegramConfig.getTelegramChatId();
         this.sendMessageUrl = String.format(SEND_MESSAGE_URL, telegramConfig.telegramToken);
+        this.getUpdatesUrl = String.format(GET_UPDATES_URL, telegramConfig.telegramToken);
     }
 
     public Integer createChannelPost(Order order, String issueKey) {
         String message = String.format(
                 "<u><b>Test title</b></u>: <pre>%s</pre>\n" +
-                "<u><b>Price</b></u>: [%s]\n" +
-                "<u><b>Jira ssue</b></u>: <a href=\"https://jira.autotests.cloud/browse/%s\">%s</a>\n",
+                        "<u><b>Price</b></u>: [%s]\n" +
+                        "<u><b>Jira ssue</b></u>: <a href=\"https://jira.autotests.cloud/browse/%s\">%s</a>\n",
                 order.getTitle(), order.getPrice(), issueKey, issueKey); // todo email
 
         String body = String.format("chat_id=%s&text=%s&parse_mode=html", this.channelId, message);
@@ -39,11 +43,11 @@ public class TelegramService {
     public Integer createChannelPost(Order order, String issueKey, String githubTestUrl) {
         String message = String.format(
                 "<u><b>Test title</b></u>: <code>%s</code>\n" +
-                "<u><b>Price</b></u>: [%s]\n" +
-                "<u><b>Jira ssue</b></u>: <a href=\"https://jira.autotests.cloud/browse/%s\">%s</a>\n" +
-                "<u><b>Jenkins job</b></u>: <a href=\"https://jenkins.autotests.cloud/job/%s\">%s</a>\n" +
-                "<u><b>Github code</b></u>:\n" +
-                "%s",
+                        "<u><b>Price</b></u>: [%s]\n" +
+                        "<u><b>Jira ssue</b></u>: <a href=\"https://jira.autotests.cloud/browse/%s\">%s</a>\n" +
+                        "<u><b>Jenkins job</b></u>: <a href=\"https://jenkins.autotests.cloud/job/%s\">%s</a>\n" +
+                        "<u><b>Github code</b></u>:\n" +
+                        "%s",
                 order.getTitle(), order.getPrice(), issueKey, issueKey, issueKey, issueKey, githubTestUrl); // todo email
 
         String body = String.format("chat_id=%s&text=%s&parse_mode=html", this.channelId, message);
@@ -51,14 +55,18 @@ public class TelegramService {
         return sendText(body);
     }
 
-    public Integer addOnboardingMessage(Integer channelPostId) {
+    public Integer addOnBoardingMessage(Integer channelPostId) {
         String message = "Hello, my friend!\n\n" +
-                "Leave any message here, to get notified, when autotests get ready!";
+                "Jenkins job with tests is already running!\n" +
+                "Report will be here in 1 minute!\n\n" +
+                "Leave here any message to get notified";
 
-        String body = String.format("chat_id=%s&reply_to_message_id=%s&text=%s&parse_mode=html",
-                channelPostId, this.chatId, message);
-
-        return sendText(body);
+        Integer chatMessageId = getChatMessageId(channelPostId);
+        if(chatMessageId != null)
+            return sendText(String.format("chat_id=%s&reply_to_message_id=%s&text=%s&parse_mode=html",
+                this.chatId, getChatMessageId(channelPostId), message));
+        else
+            return null;
     }
 
     private Integer sendText(String body) {
@@ -83,5 +91,27 @@ public class TelegramService {
             return createMessageResponse.getJSONObject("result")
                     .getInt("message_id");
         return null;
+    }
+
+    public Integer getChatMessageId(Integer channelPostId) {
+        for (Object obj : getUpdates()) {
+            JSONObject postObject = (JSONObject) obj;
+
+            if (postObject.has("message")) {
+                JSONObject messageObject = postObject.getJSONObject("message");
+                if (messageObject.has("forward_from_message_id")) {
+                    if (messageObject.getInt("forward_from_message_id") == channelPostId) {
+                        return messageObject.getInt("message_id");
+                    }
+                }
+            }
+        }
+        return null;
+    }
+
+    public JSONArray getUpdates() {
+        return Unirest.post(getUpdatesUrl)
+                .asJson().getBody()
+                .getObject().getJSONArray("result");
     }
 }
