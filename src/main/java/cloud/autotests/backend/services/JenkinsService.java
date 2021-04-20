@@ -35,8 +35,8 @@ public class JenkinsService {
         this.telegramConfig = telegramConfig;
     }
 
-    public void createJob(Order order, String jiraIssueKey, String githubRepositoryUrl) { // todo add results parser
-        String body = new JenkinsConfigBuilder().getConfig(order, telegramConfig, githubRepositoryUrl);
+    public void createJob(Order order, String jiraIssueKey, String githubRepositoryUrl, Integer telegramChatMessageId) { // todo add results parser
+        String body = new JenkinsConfigBuilder().getConfig(order, telegramConfig, githubRepositoryUrl, telegramChatMessageId);
 
         HttpResponse<String> createJobResponse = Unirest
                 .post(String.format(CREATE_JOB_URL, jenkinsUrl, jiraIssueKey))

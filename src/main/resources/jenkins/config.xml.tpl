@@ -180,9 +180,9 @@ test
           </logTexts>
           <EscalateStatus>false</EscalateStatus>
           <RunIfJobSuccessful>false</RunIfJobSuccessful>
-          <script>FILE=./allure-notifications-2.2.2.jar&#xd;
+          <script>FILE=./allure-notifications-2.2.3.jar&#xd;
 if [ ! -f &quot;$FILE&quot; ]; then&#xd;
-   wget https://github.com/qa-guru/allure-notifications/releases/download/language/allure-notifications-2.2.2.jar&#xd;
+   wget https://github.com/qa-guru/allure-notifications/releases/download/no_tag/allure-notifications-2.2.3.jar&#xd;
 fi&#xd;
 </script>
         </hudson.plugins.postbuildtask.TaskProperties>
@@ -197,16 +197,17 @@ fi&#xd;
           <RunIfJobSuccessful>false</RunIfJobSuccessful>
           <script>java  \&#xd;
 &quot;-Dmessenger=telegram&quot; \&#xd;
-&quot;-Dchat.id=%s&quot; \&#xd;
 &quot;-Dbot.token=%s&quot; \&#xd;
+&quot;-Dchat.id=%s&quot; \&#xd;
+&quot;-Dreply_to_message_id=%s&quot; \&#xd;
 &quot;-Dbuild.launch.name=%s&quot; \&#xd;
 &quot;-Dbuild.env=%s&quot; \&#xd;
 &quot;-Dbuild.report.link=${BUILD_URL}&quot; \&#xd;
-&quot;-Dproject.name=${JOB_BASE_NAME}&quot; \&#xd;
+&quot;-Dproject.name=%s&quot; \&#xd;
 &quot;-Dlang=en&quot; \&#xd;
 &quot;-Denable.chart=true&quot; \&#xd;
 &quot;-Dallure.report.folder=./allure-report/&quot; \&#xd;
--jar allure-notifications-2.2.2.jar</script>
+-jar allure-notifications-2.2.3.jar</script>
         </hudson.plugins.postbuildtask.TaskProperties>
       </tasks>
     </hudson.plugins.postbuildtask.PostbuildTask>

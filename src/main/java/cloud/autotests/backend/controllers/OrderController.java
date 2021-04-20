@@ -54,21 +54,23 @@ public class OrderController {
             return new ResponseEntity<>("Cant create tests class in github", HttpStatus.INTERNAL_SERVER_ERROR);
         }
 
-        jenkinsService.createJob(order, jiraIssueKey, githubRepositoryUrl);
-        jenkinsService.launchJob(jiraIssueKey);
-
         Integer telegramChannelPostId = telegramService.createChannelPost(order, jiraIssueKey, githubTestsUrl);
         if (telegramChannelPostId == null) {
             return new ResponseEntity<>("Cant create telegram channel post", HttpStatus.INTERNAL_SERVER_ERROR);
         }
+
+        sleep(5000);
+        Integer telegramChatMessageId = telegramService.getChatMessageId(telegramChannelPostId); // todo awaitility
+
+        jenkinsService.createJob(order, jiraIssueKey, githubRepositoryUrl, telegramChatMessageId);
+        jenkinsService.launchJob(jiraIssueKey);
 
         Boolean jiraUpdateIssueResult = jiraService.updateTask(order, jiraIssueKey, githubTestsUrl, telegramChannelPostId);
         if (jiraUpdateIssueResult == null) {
             return new ResponseEntity<>("Cant update jira issue", HttpStatus.INTERNAL_SERVER_ERROR);
         }
 
-        sleep(5000);
-        Integer telegramChatMessageId = telegramService.addOnBoardingMessage(telegramChannelPostId);
+        telegramService.addOnBoardingMessage(telegramChatMessageId);
         if (telegramChatMessageId == null) {
             return new ResponseEntity<>("Cant add comment to telegram channel post", HttpStatus.INTERNAL_SERVER_ERROR);
         }

@@ -8,12 +8,12 @@ import static cloud.autotests.backend.utils.Utils.readStringFromFile;
 public class JenkinsConfigBuilder {
     private final String CONFIG_TEMPLATE_PATH = "src/main/resources/jenkins/config.xml.tpl";
 
-    public String getConfig(Order order, TelegramConfig telegramConfig, String githubRepositoryUrl) {
+    public String getConfig(Order order, TelegramConfig telegramConfig, String githubRepositoryUrl, Integer telegramChatMessageId) {
         String launchName = order.getTitle().replace("_", "-"); // todo remove bug in notifications
 
         return String.format(getConfigTemplate(), githubRepositoryUrl, "%s", "%s",
-                telegramConfig.getTelegramChatId(), telegramConfig.getTelegramToken(),
-                launchName, "prod"); // todo add site
+                telegramConfig.getTelegramToken(), telegramConfig.getTelegramChatId(), telegramChatMessageId,
+                launchName, "prod", launchName); // todo add site
     }
 
     private String getConfigTemplate() {

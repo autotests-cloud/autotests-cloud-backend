@@ -32,7 +32,7 @@ public class TelegramService {
         String message = String.format(
                 "<u><b>Test title</b></u>: <pre>%s</pre>\n" +
                         "<u><b>Price</b></u>: [%s]\n" +
-                        "<u><b>Jira ssue</b></u>: <a href=\"https://jira.autotests.cloud/browse/%s\">%s</a>\n",
+                        "<u><b>Jira issue</b></u>: <a href=\"https://jira.autotests.cloud/browse/%s\">%s</a>\n",
                 order.getTitle(), order.getPrice(), issueKey, issueKey); // todo email
 
         String body = String.format("chat_id=%s&text=%s&parse_mode=html", this.channelId, message);
@@ -44,7 +44,7 @@ public class TelegramService {
         String message = String.format(
                 "<u><b>Test title</b></u>: <code>%s</code>\n" +
                         "<u><b>Price</b></u>: [%s]\n" +
-                        "<u><b>Jira ssue</b></u>: <a href=\"https://jira.autotests.cloud/browse/%s\">%s</a>\n" +
+                        "<u><b>Jira issue</b></u>: <a href=\"https://jira.autotests.cloud/browse/%s\">%s</a>\n" +
                         "<u><b>Jenkins job</b></u>: <a href=\"https://jenkins.autotests.cloud/job/%s\">%s</a>\n" +
                         "<u><b>Github code</b></u>:\n" +
                         "%s",
@@ -55,18 +55,14 @@ public class TelegramService {
         return sendText(body);
     }
 
-    public Integer addOnBoardingMessage(Integer channelPostId) {
+    public Integer addOnBoardingMessage(Integer chatMessageId) {
         String message = "Hello, my friend!\n\n" +
                 "Jenkins job with tests is already running!\n" +
                 "Report will be here in 1 minute!\n\n" +
                 "Leave here any message to get notified";
 
-        Integer chatMessageId = getChatMessageId(channelPostId);
-        if(chatMessageId != null)
-            return sendText(String.format("chat_id=%s&reply_to_message_id=%s&text=%s&parse_mode=html",
-                this.chatId, getChatMessageId(channelPostId), message));
-        else
-            return null;
+        return sendText(String.format("chat_id=%s&reply_to_message_id=%s&text=%s&parse_mode=html",
+            this.chatId, chatMessageId, message));
     }
 
     private Integer sendText(String body) {
