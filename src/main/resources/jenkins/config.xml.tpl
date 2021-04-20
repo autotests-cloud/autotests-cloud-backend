@@ -71,6 +71,12 @@
           <defaultValue>1</defaultValue>
           <trim>false</trim>
         </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>ALLURE_NOTIFICATIONS_VERSION</name>
+          <description>https://github.com/qa-guru/allure-notifications</description>
+          <defaultValue>2.2.3</defaultValue>
+          <trim>false</trim>
+        </hudson.model.StringParameterDefinition>
       </parameterDefinitions>
     </hudson.model.ParametersDefinitionProperty>
   </properties>
@@ -180,9 +186,10 @@ test
           </logTexts>
           <EscalateStatus>false</EscalateStatus>
           <RunIfJobSuccessful>false</RunIfJobSuccessful>
-          <script>FILE=./allure-notifications-2.2.3.jar&#xd;
+          <script>cd ..
+FILE=./allure-notifications-${ALLURE_NOTIFICATIONS_VERSION}.jar&#xd;
 if [ ! -f &quot;$FILE&quot; ]; then&#xd;
-   wget https://github.com/qa-guru/allure-notifications/releases/download/no_tag/allure-notifications-2.2.3.jar&#xd;
+   wget https://github.com/qa-guru/allure-notifications/releases/download/${ALLURE_NOTIFICATIONS_VERSION}/allure-notifications-${ALLURE_NOTIFICATIONS_VERSION}.jar&#xd;
 fi&#xd;
 </script>
         </hudson.plugins.postbuildtask.TaskProperties>
@@ -195,11 +202,11 @@ fi&#xd;
           </logTexts>
           <EscalateStatus>false</EscalateStatus>
           <RunIfJobSuccessful>false</RunIfJobSuccessful>
-          <script>java  \&#xd;
+          <script>java \&#xd;
 &quot;-Dmessenger=telegram&quot; \&#xd;
 &quot;-Dbot.token=%s&quot; \&#xd;
 &quot;-Dchat.id=%s&quot; \&#xd;
-&quot;-Dreply_to_message_id=%s&quot; \&#xd;
+&quot;-Dreply.to.message.id=%s&quot; \&#xd;
 &quot;-Dbuild.launch.name=%s&quot; \&#xd;
 &quot;-Dbuild.env=%s&quot; \&#xd;
 &quot;-Dbuild.report.link=${BUILD_URL}&quot; \&#xd;
@@ -207,7 +214,7 @@ fi&#xd;
 &quot;-Dlang=en&quot; \&#xd;
 &quot;-Denable.chart=true&quot; \&#xd;
 &quot;-Dallure.report.folder=./allure-report/&quot; \&#xd;
--jar allure-notifications-2.2.3.jar</script>
+-jar ../allure-notifications-${ALLURE_NOTIFICATIONS_VERSION}.jar</script>
         </hudson.plugins.postbuildtask.TaskProperties>
       </tasks>
     </hudson.plugins.postbuildtask.PostbuildTask>
