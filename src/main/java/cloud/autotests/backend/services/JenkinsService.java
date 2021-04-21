@@ -1,20 +1,16 @@
 package cloud.autotests.backend.services;
 
-import cloud.autotests.backend.builders.JenkinsConfigBuilder;
-import cloud.autotests.backend.builders.TestBuilder;
-import cloud.autotests.backend.config.GithubConfig;
+import cloud.autotests.backend.generators.jenkins.JenkinsConfigGenerator;
 import cloud.autotests.backend.config.JenkinsConfig;
 import cloud.autotests.backend.config.TelegramConfig;
 import cloud.autotests.backend.models.Order;
 import kong.unirest.HttpResponse;
-import kong.unirest.RequestBodyEntity;
 import kong.unirest.Unirest;
-import kong.unirest.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import java.util.Base64;
+import static java.lang.String.format;
 
 public class JenkinsService {
     private static final Logger LOG = LoggerFactory.getLogger(JenkinsService.class);
@@ -36,10 +32,11 @@ public class JenkinsService {
     }
 
     public void createJob(Order order, String jiraIssueKey, String githubRepositoryUrl, Integer telegramChatMessageId) { // todo add results parser
-        String body = new JenkinsConfigBuilder().getConfig(order, telegramConfig, githubRepositoryUrl, telegramChatMessageId);
+        String body = new JenkinsConfigGenerator().getConfig(order, telegramConfig, githubRepositoryUrl, telegramChatMessageId);
+        String url = format(CREATE_JOB_URL, jenkinsUrl, jiraIssueKey);
 
         HttpResponse<String> createJobResponse = Unirest
-                .post(String.format(CREATE_JOB_URL, jenkinsUrl, jiraIssueKey))
+                .post(url)
                 .header("Content-Type", "text/xml; charset=utf-8")
                 .basicAuth(this.jenkinsUsername, this.jenkinsToken)
                 .body(body).asString();
@@ -48,8 +45,10 @@ public class JenkinsService {
     }
 
     public Integer launchJob(String jiraIssueKey) {
+        String url = format(LAUNCH_JOB_URL, jenkinsUrl, jiraIssueKey);
+
         HttpResponse<String> createJobResponse = Unirest
-                .post(String.format(LAUNCH_JOB_URL, jenkinsUrl, jiraIssueKey))
+                .post(url)
                 .header("Content-Type", "text/xml; charset=utf-8")
                 .basicAuth(this.jenkinsUsername, this.jenkinsToken)
                 .asString();

@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+import static cloud.autotests.backend.utils.CleanContentUtils.cleanOrder;
 import static java.lang.Thread.sleep;
 
 @RestController
@@ -37,7 +38,9 @@ public class OrderController {
     }
 
     @PostMapping
-    public ResponseEntity createOrder(@RequestBody Order order) throws InterruptedException {
+    public ResponseEntity createOrder(@RequestBody Order rawOrder) throws InterruptedException {
+        Order order = cleanOrder(rawOrder);
+
         String jiraIssueKey = jiraService.createTask(order);
         if (jiraIssueKey == null) {
             return new ResponseEntity<>("Cant create jira issue", HttpStatus.INTERNAL_SERVER_ERROR);

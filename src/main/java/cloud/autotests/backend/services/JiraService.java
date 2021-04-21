@@ -17,6 +17,8 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
+import static java.lang.String.format;
+
 public class JiraService {
 
     private final Long ISSUE_TYPE = 10002L;
@@ -68,7 +70,7 @@ public class JiraService {
     public Boolean updateTask(Order order, String issueKey, String githubTestsUrl, Integer telegramChannelPostId) {
         String jenkinsJobUrl = "https://jenkins.autotests.cloud/job/" + issueKey;
         String telegramChannelUrl = "https://t.me/autotests_cloud/" + telegramChannelPostId;
-        String content = String.format(
+        String content = format(
                 "*Price*: %s\n" +
                 "*Email*: %s\n\n" +
                 "*Github code*: %s\n" +

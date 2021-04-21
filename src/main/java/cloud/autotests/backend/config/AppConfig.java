@@ -13,31 +13,27 @@ public class AppConfig {
 
     @Autowired
     JiraConfig jiraConfig;
+    @Autowired
+    GithubConfig githubConfig;
+    @Autowired
+    JenkinsConfig jenkinsConfig;
+    @Autowired
+    TelegramConfig telegramConfig;
 
     @Bean
     JiraService jiraService() {
         return new JiraService(jiraConfig);
     }
 
-    @Autowired
-    GithubConfig githubConfig;
-
     @Bean
     GithubService githubService() {
         return new GithubService(githubConfig);
     }
 
-
-    @Autowired
-    JenkinsConfig jenkinsConfig;
-
     @Bean
     JenkinsService jenkinsService() {
         return new JenkinsService(jenkinsConfig, telegramConfig);
     }
-
-    @Autowired
-    TelegramConfig telegramConfig;
 
     @Bean
     TelegramService telegramService() {

@@ -9,6 +9,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import static java.lang.String.format;
+
 public class TelegramService {
     private static final Logger LOG = LoggerFactory.getLogger(TelegramService.class);
 
@@ -24,24 +26,24 @@ public class TelegramService {
     public TelegramService(TelegramConfig telegramConfig) {
         this.channelId = telegramConfig.getTelegramChannelId();
         this.chatId = telegramConfig.getTelegramChatId();
-        this.sendMessageUrl = String.format(SEND_MESSAGE_URL, telegramConfig.telegramToken);
-        this.getUpdatesUrl = String.format(GET_UPDATES_URL, telegramConfig.telegramToken);
+        this.sendMessageUrl = format(SEND_MESSAGE_URL, telegramConfig.telegramToken);
+        this.getUpdatesUrl = format(GET_UPDATES_URL, telegramConfig.telegramToken);
     }
 
     public Integer createChannelPost(Order order, String issueKey) {
-        String message = String.format(
+        String message = format(
                 "<u><b>Test title</b></u>: <pre>%s</pre>\n" +
                         "<u><b>Price</b></u>: [%s]\n" +
                         "<u><b>Jira issue</b></u>: <a href=\"https://jira.autotests.cloud/browse/%s\">%s</a>\n",
                 order.getTitle(), order.getPrice(), issueKey, issueKey); // todo email
 
-        String body = String.format("chat_id=%s&text=%s&parse_mode=html", this.channelId, message);
+        String body = format("chat_id=%s&text=%s&parse_mode=html", this.channelId, message);
 
         return sendText(body);
     }
 
     public Integer createChannelPost(Order order, String issueKey, String githubTestUrl) {
-        String message = String.format(
+        String message = format(
                 "<u><b>Test title</b></u>: <code>%s</code>\n" +
                         "<u><b>Price</b></u>: [%s]\n" +
                         "<u><b>Jira issue</b></u>: <a href=\"https://jira.autotests.cloud/browse/%s\">%s</a>\n" +
@@ -50,19 +52,19 @@ public class TelegramService {
                         "%s",
                 order.getTitle(), order.getPrice(), issueKey, issueKey, issueKey, issueKey, githubTestUrl); // todo email
 
-        String body = String.format("chat_id=%s&text=%s&parse_mode=html", this.channelId, message);
+        String body = format("chat_id=%s&text=%s&parse_mode=html", this.channelId, message);
 
         return sendText(body);
     }
 
     public Integer addOnBoardingMessage(Integer chatMessageId) {
         String message = "Hello, my friend!\n\n" +
-                "Jenkins job with tests is already running!\n" +
-                "Report will be here in 1 minute!\n\n" +
+                "Jenkins job with tests <b>is already running</b>!\n" +
+                "Report will be here <u>in 1 minute</u>!\n\n" +
                 "Leave here any message to get notified";
 
-        return sendText(String.format("chat_id=%s&reply_to_message_id=%s&text=%s&parse_mode=html",
-            this.chatId, chatMessageId, message));
+        return sendText(format("chat_id=%s&reply_to_message_id=%s&text=%s&parse_mode=html",
+                this.chatId, chatMessageId, message));
     }
 
     private Integer sendText(String body) {

@@ -1,6 +1,5 @@
 package cloud.autotests.backend.services;
 
-import cloud.autotests.backend.builders.TestBuilder;
 import cloud.autotests.backend.config.GithubConfig;
 import cloud.autotests.backend.models.Order;
 import kong.unirest.Unirest;
@@ -11,12 +10,15 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.Base64;
 
+import static cloud.autotests.backend.generators.tests.OnBoardingTestClassGenerator.generateOnBoardingTestClass;
+import static java.lang.String.format;
+
 public class GithubService {
     private static final Logger LOG = LoggerFactory.getLogger(GithubService.class);
 
     private final String TEMPLATE_REPOSITORY_URL = "https://api.github.com/repos/%s/%s/generate";
     private final String NEW_TEST_REPOSITORY_PATH = "https://api.github.com/repos/%s/%s/contents/" +
-            "src/test/java/cloud/autotests/tests/AppTests.java";
+            "src/test/java/cloud/autotests/tests/%sTests.java";
 
     private final String githubToken;
     private final String githubTemplateRepositoryApiUrl;
@@ -25,14 +27,14 @@ public class GithubService {
     @Autowired
     public GithubService(GithubConfig githubConfig) {
         this.githubToken = githubConfig.getGithubToken();
-        this.githubTemplateRepositoryApiUrl = String.format(TEMPLATE_REPOSITORY_URL,
+        this.githubTemplateRepositoryApiUrl = format(TEMPLATE_REPOSITORY_URL,
                 githubConfig.getGithubTemplateOwner(), githubConfig.getGithubTemplateRepository());
         this.githubGeneratedOwner = githubConfig.getGithubGeneratedOwner();
     }
 
     public String createRepositoryFromTemplate(String jiraIssueKey) {
         String bodyTemplate = "{\"owner\": \"%s\", \"name\": \"%s\"}";
-        String body = String.format(bodyTemplate, this.githubGeneratedOwner, jiraIssueKey);
+        String body = format(bodyTemplate, this.githubGeneratedOwner, jiraIssueKey);
 
         JSONObject createRepositoryResponse = Unirest
                 .post(this.githubTemplateRepositoryApiUrl)
@@ -71,12 +73,15 @@ public class GithubService {
     }
 
     public String generateTests(Order order, String jiraIssueKey) {
-        String testClassPath = String.format(NEW_TEST_REPOSITORY_PATH, this.githubGeneratedOwner, jiraIssueKey);
-        String testClassContent = new TestBuilder().generateTestClass(order); // todo rude
+        final String testClassNamePrefix = "App";
+        String testClassContent = generateOnBoardingTestClass(testClassNamePrefix, order);
         String testClassContent64 = Base64.getEncoder().encodeToString(testClassContent.getBytes());
 
+        String testClassPath = format(NEW_TEST_REPOSITORY_PATH,
+                this.githubGeneratedOwner, jiraIssueKey, testClassNamePrefix);
+
         String bodyTemplate = "{\"message\": \"Added test '%s'\", \"content\": \"%s\"}";
-        String body = String.format(bodyTemplate, order.getTitle(), testClassContent64);
+        String body = format(bodyTemplate, order.getTitle(), testClassContent64);
 
         JSONObject createTestsResponse = Unirest
                 .put(testClassPath)
