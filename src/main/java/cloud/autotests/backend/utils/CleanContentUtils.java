@@ -13,7 +13,7 @@ public class CleanContentUtils {
                 .replace("\r\n", "\n")
                 .replace("\r", "\n")
                 .replace("\"", "\\\"")
-                .replace("\\", "\\\\")
+//                .replace("\\", "\\\\")
                 .replace("{code}", "")
                 .replace("</code>", "")
                 .replace("<code>", "")
