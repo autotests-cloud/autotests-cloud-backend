@@ -1,6 +1,10 @@
 package cloud.autotests.backend.utils;
 
+import cloud.autotests.backend.controllers.OrderController;
 import cloud.autotests.backend.models.Order;
+import org.aspectj.weaver.ast.Or;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -8,6 +12,9 @@ import java.util.List;
 import static java.lang.String.join;
 
 public class CleanContentUtils {
+    private static final Logger LOG = LoggerFactory.getLogger(CleanContentUtils.class);
+
+
     public static String cleanText(String text) {
         String[] safeTexts = text
                 .replace("\r\n", "\n")
@@ -36,13 +43,17 @@ public class CleanContentUtils {
         return cleanText(cutText(text, length));
     }
 
-    public static Order cleanOrder(Order order) {
-        order.setPrice(cutCleanText(order.getPrice(), 50));
-        order.setEmail(cutCleanText(order.getEmail(), 100));
-        order.setTitle(cutCleanText(order.getTitle(), 140));
-        order.setSteps(cutCleanText(order.getSteps(), 1500));
+    public static Order cleanOrder(Order rawOrder) {
+        LOG.info("\n[RAW ORDER]\n{}\n", rawOrder);
 
-        return order;
+        Order cleanOrder = new Order();
+        cleanOrder.setPrice(cutCleanText(rawOrder.getPrice(), 50));
+        cleanOrder.setEmail(cutCleanText(rawOrder.getEmail(), 100));
+        cleanOrder.setTitle(cutCleanText(rawOrder.getTitle(), 140));
+        cleanOrder.setSteps(cutCleanText(rawOrder.getSteps(), 1500));
+        LOG.info("\n[CLEAN ORDER]\n{}\n", cleanOrder);
+
+        return cleanOrder;
     }
 }
 

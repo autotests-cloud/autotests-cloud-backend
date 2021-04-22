@@ -1,22 +1,39 @@
 package cloud.autotests.backend.utils;
 
+import cloud.autotests.backend.services.JenkinsService;
+import lombok.SneakyThrows;
+import org.jsoup.Connection;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 public class HtmlUtils {
+    private static final Logger LOG = LoggerFactory.getLogger(HtmlUtils.class);
+
+    public static Document getHtmlFromUrl(String url) throws IOException {
+        try {
+            return Jsoup.connect(url).get();
+        } catch (IOException e) {
+            LOG.warn("Cannot connect to URL " + url);
+            throw e;
+        }
+    }
 
     public static Document getHtmlDom(String url) {
         Document htmlDom;
+        Connection urlConnect = Jsoup.connect(url);
         try {
-            htmlDom = Jsoup.connect(url).get();
+            htmlDom = urlConnect.get();
         } catch (IOException e) {
             e.printStackTrace();
             return null;

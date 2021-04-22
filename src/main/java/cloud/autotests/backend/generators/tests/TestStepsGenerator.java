@@ -13,7 +13,7 @@ public class TestStepsGenerator {
     }
 
     public static String generateCheckTitleStep(String title) {
-        String stepDescription = format("Checking that the page title has is '%s'", title);
+        String stepDescription = format("Checking that page title is '%s'", title);
         String stepContent = format(
                 "String expectedTitle = \"%s\";\r\n" +
                 "            String actualTitle = title();\r\n" +

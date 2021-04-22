@@ -51,4 +51,16 @@ public class OnBoardingTestClassGeneratorTests {
     }
 
 
+    @Test
+    void generateFromWrongUrlTestMethodsTest() {
+        Order newOrder = order;
+        newOrder.setSteps("Open https://some.sit\n" +
+                "I click on logo\n" +
+                "Logo should fly");
+        String generatedTestMethods = generateFromUrlTestMethods(order);
+
+        assertThat(generatedTestMethods).isEmpty();
+    }
+
+
 }

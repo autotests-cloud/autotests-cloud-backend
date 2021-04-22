@@ -5,6 +5,8 @@ import cloud.autotests.backend.services.GithubService;
 import cloud.autotests.backend.services.JenkinsService;
 import cloud.autotests.backend.services.JiraService;
 import cloud.autotests.backend.services.TelegramService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -18,6 +20,7 @@ import static java.lang.Thread.sleep;
 @RestController
 @RequestMapping("orders")
 public class OrderController {
+    private static final Logger LOG = LoggerFactory.getLogger(OrderController.class);
 
     @Autowired
     JiraService jiraService;

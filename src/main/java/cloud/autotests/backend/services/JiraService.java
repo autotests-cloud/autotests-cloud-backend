@@ -83,7 +83,6 @@ public class JiraService {
         return updateIssueDescription(issueKey, content);
     }
 
-
     private String createIssue(String projectKey, Long issueType, String issueSummary) {
         IssueRestClient issueClient = jiraRestClient.getIssueClient();
 
