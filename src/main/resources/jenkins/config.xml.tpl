@@ -8,6 +8,14 @@
       <inheritanceStrategy class="org.jenkinsci.plugins.matrixauth.inheritance.InheritParentStrategy"/>
       <permission>hudson.model.Item.Read:anonymous</permission>
     </hudson.security.AuthorizationMatrixProperty>
+    <jenkins.model.BuildDiscarderProperty>
+      <strategy class="hudson.tasks.LogRotator">
+        <daysToKeep>3</daysToKeep>
+        <numToKeep>10</numToKeep>
+        <artifactDaysToKeep>-1</artifactDaysToKeep>
+        <artifactNumToKeep>-1</artifactNumToKeep>
+      </strategy>
+    </jenkins.model.BuildDiscarderProperty>
     <hudson.model.ParametersDefinitionProperty>
       <parameterDefinitions>
         <hudson.model.ChoiceParameterDefinition>
@@ -18,6 +26,7 @@
               <string>chrome</string>
               <string>opera</string>
               <string>firefox</string>
+              <string>safari</string>
             </a>
           </choices>
         </hudson.model.ChoiceParameterDefinition>
@@ -127,7 +136,7 @@
     </jenkins.plugins.http__request.HttpRequest>
     <com.etas.jenkins.plugins.CreateTextFile.CreateFileBuilder plugin="text-file-operations@1.3.2">
       <textFilePath>src/test/resources/config/remote_driver.properties</textFilePath>
-      <textFileContent>web.browser=chrome
+      <textFileContent>web.browser=
 web.browser.version=
 web.browser.size=
 web.remote.driver.url=
