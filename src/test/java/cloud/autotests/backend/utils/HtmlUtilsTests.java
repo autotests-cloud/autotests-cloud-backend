@@ -10,8 +10,8 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
-import static cloud.autotests.backend.utils.HtmlUtils.getHeaderValues;
-import static cloud.autotests.backend.utils.HtmlUtils.getTitleValue;
+import static cloud.autotests.backend.utils.HtmlUtils.*;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -28,9 +28,26 @@ public class HtmlUtilsTests {
         headers = getHeaderValues(htmlDom);
     }
 
+
+
+    @Test
+    void getHtmlFromUrlTest() {
+        assertThat(getHtmlFromUrl("https://google.com")).isNotEmpty();
+    }
+
+    @Test
+    void getHtmlFromWrongUrlTest() {
+        assertThat(getHtmlFromUrl("http://wrong.url")).isEmpty();
+    }
+
+    @Test
+    void getHtmlFromInvalidUrlTest() {
+        assertThat(getHtmlFromUrl("afvwfas")).isEmpty();
+    }
+
     @Test
     void getTitleValueTest() {
-        assertEquals(title, "Google");
+        assertThat(title).isEqualTo("Google");
     }
 
     @Test
@@ -38,18 +55,19 @@ public class HtmlUtilsTests {
         File input = new File("./src/test/resources/empty_title.html");
         Document htmlDom = Jsoup.parse(input, "UTF-8");
         title = getTitleValue(htmlDom);
-        assertTrue(title.isEmpty());
+
+        assertThat(title).isEmpty();
     }
 
     @Test
     void getHeaderValuesToStringContentTest() {
-        assertEquals(headers.toString(), "{h1=[h1 here, h1 with class here], h2=[h2 here]}");
+        assertThat(headers.toString()).isEqualTo("{h1=[h1 here, h1 with class here], h2=[h2 here]}");
     }
 
     @Test
     void getHeaderValueMapContentTest() {
-        assertEquals(headers.get("h1").get(0), "h1 here");
-        assertEquals(headers.get("h1").get(1), "h1 with class here");
-        assertEquals(headers.get("h2").get(0), "h2 here");
+        assertThat(headers.get("h1").get(0)).isEqualTo("h1 here");
+        assertThat(headers.get("h1").get(1)).isEqualTo("h1 with class here");
+        assertThat(headers.get("h2").get(0)).isEqualTo("h2 here");
     }
 }

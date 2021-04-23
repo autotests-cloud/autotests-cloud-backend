@@ -1,17 +1,13 @@
 package cloud.autotests.backend.utils;
 
-import cloud.autotests.backend.services.JenkinsService;
-import lombok.SneakyThrows;
-import org.jsoup.Connection;
-import org.jsoup.Jsoup;
+import kong.unirest.Unirest;
+import kong.unirest.UnirestException;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
-import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -20,25 +16,13 @@ import java.util.Map;
 public class HtmlUtils {
     private static final Logger LOG = LoggerFactory.getLogger(HtmlUtils.class);
 
-    public static Document getHtmlFromUrl(String url) throws IOException {
+    public static String getHtmlFromUrl(String url) {
         try {
-            return Jsoup.connect(url).get();
-        } catch (IOException e) {
-            LOG.warn("Cannot connect to URL " + url);
-            throw e;
+            return String.valueOf(Unirest.get(url).asString().getBody());
+        } catch (UnirestException e) {
+            LOG.error("[URL NOT VALID] {}\n {}", url, e.getMessage());
         }
-    }
-
-    public static Document getHtmlDom(String url) {
-        Document htmlDom;
-        Connection urlConnect = Jsoup.connect(url);
-        try {
-            htmlDom = urlConnect.get();
-        } catch (IOException e) {
-            e.printStackTrace();
-            return null;
-        }
-        return htmlDom; // todo remove iframe
+        return "";
     }
 
     public static Map<String, List<String>> getHeaderValues(Document htmlDom) {

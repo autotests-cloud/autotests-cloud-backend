@@ -55,16 +55,12 @@ public class OnBoardingTestClassGenerator {
     public static String generateFromUrlTestMethods(Order order) {
         List<String> urls = getUrlsFromOrder(order.getSteps());
         if (urls.size() == 0)
-            return null;
+            return "";
 
         String url = urls.get(0);
-        String htmlBody;
-        try {
-            htmlBody = String.valueOf(Unirest.get(url).asString().getBody());
-        } catch (UnirestException e) {
-            LOG.error("[URL NOT VALID] {}\n {}", url, e.getMessage());
+        String htmlBody = getHtmlFromUrl(url);
+        if(htmlBody.isEmpty())
             return "";
-        }
 
         Document htmlDom = Jsoup.parse(htmlBody);
 
