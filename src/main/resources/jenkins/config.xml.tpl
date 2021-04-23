@@ -49,9 +49,9 @@
           <choices class="java.util.Arrays$ArrayList">
             <a class="string-array">
               <string>1920x1080</string>
-              <string>1366x768  </string>
+              <string>1366x768</string>
               <string>1280x1024</string>
-              <string>1280x800  </string>
+              <string>1280x800</string>
               <string>1024x768</string>
             </a>
           </choices>
@@ -77,7 +77,7 @@
         <hudson.model.StringParameterDefinition>
           <name>THREADS</name>
           <description></description>
-          <defaultValue>1</defaultValue>
+          <defaultValue>5</defaultValue>
           <trim>false</trim>
         </hudson.model.StringParameterDefinition>
         <hudson.model.StringParameterDefinition>

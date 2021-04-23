@@ -16,7 +16,7 @@ public class OnBoardingTestClassGeneratorTests {
 
     static Order order;
     private static final String TEST_CLASS_ONBOARDING_PATH = "src/test/resources/github/test_class_onboarding.tpl";
-    private static final String TEST_METHOD_ONBOARDING_TITLE_PATH = "src/test/resources/github/test_method_onboarding_title.tpl";
+    private static final String TEST_METHOD_ONBOARDING_FROM_URL_PATH = "src/test/resources/github/test_method_onboarding_from_url.tpl";
     private static final String testClassPrefix = "App";
     private static final String price = "free";
     private static final String email = "a@a.a";
@@ -45,7 +45,7 @@ public class OnBoardingTestClassGeneratorTests {
     @Test
     void generateFromUrlTestMethodsTest() {
         String generatedTestMethods = generateFromUrlTestMethods(order);
-        String expectedTestMethods = readStringFromFile(TEST_METHOD_ONBOARDING_TITLE_PATH);
+        String expectedTestMethods = readStringFromFile(TEST_METHOD_ONBOARDING_FROM_URL_PATH);
 
         assertThat(generatedTestMethods).isEqualTo(expectedTestMethods);
     }

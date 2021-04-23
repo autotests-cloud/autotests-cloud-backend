@@ -74,8 +74,8 @@ public class GithubService {
 
     public String generateTests(Order order, String jiraIssueKey) {
         final String testClassNamePrefix = "App";
-        String testClassContent = generateOnBoardingTestClass(testClassNamePrefix, order);
-        String testClassContent64 = Base64.getEncoder().encodeToString(testClassContent.getBytes());
+        String generatedTestsContent = generateOnBoardingTestClass(testClassNamePrefix, order);
+        String testClassContent64 = Base64.getEncoder().encodeToString(generatedTestsContent.getBytes());
 
         String testClassPath = format(NEW_TEST_REPOSITORY_PATH,
                 this.githubGeneratedOwner, jiraIssueKey, testClassNamePrefix);

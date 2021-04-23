@@ -13,7 +13,7 @@ public class TestStepsGenerator {
     }
 
     public static String generateCheckTitleStep(String title) {
-        String stepDescription = format("Checking that page title is '%s'", title);
+        String stepDescription = format("Page title should have text '%s'", title);
         String stepContent = format(
                 "String expectedTitle = \"%s\";\r\n" +
                 "            String actualTitle = title();\r\n" +
@@ -23,4 +23,21 @@ public class TestStepsGenerator {
         return generateTestStep(stepDescription, stepContent);
     }
 
+    public static String generateCheckConsoleErrorStep() {
+        String stepDescription = "Console logs should not contain text 'SEVERE'";
+        String stepContent =
+                "String consoleLogs = getConsoleLogs();\r\n" +
+                "            String errorText = \"SEVERE\";\r\n" +
+                "\r\n" +
+                "            assertThat(consoleLogs).doesNotContain(errorText);";
+
+        return generateTestStep(stepDescription, stepContent);
+    }
+
+    /*
+            step("Page should not have errors (SEVERE) in console", () -> {
+            String consoleLogs = getConsoleLogs();
+            assertThat(consoleLogs).doesNotContain("SEVERE");
+        });
+     */
 }
