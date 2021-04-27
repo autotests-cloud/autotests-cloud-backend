@@ -9,36 +9,27 @@ import com.atlassian.jira.rest.client.api.domain.Comment;
 import com.atlassian.jira.rest.client.api.domain.Issue;
 import com.atlassian.jira.rest.client.api.domain.input.IssueInput;
 import com.atlassian.jira.rest.client.api.domain.input.IssueInputBuilder;
-import com.atlassian.jira.rest.client.internal.async.AsynchronousJiraRestClientFactory;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.AllArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Service;
 
-import java.net.URI;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
 import static java.lang.String.format;
 
+@Service
+@AllArgsConstructor
 public class JiraService {
+    private static final Logger LOG = LoggerFactory.getLogger(JiraService.class);
 
-    private final Long ISSUE_TYPE = 10002L;
-
-    private final String jiraUrl;
-    private final String projectKey;
-    private final String username;
-    private final String password;
+    private static final Long ISSUE_TYPE = 10002L;
     private final JiraRestClient jiraRestClient;
+    private final JiraConfig jiraConfig;
 
-    @Autowired
-    public JiraService(JiraConfig jiraConfig) {
-        this.jiraUrl = jiraConfig.getJiraUrl();
-        this.projectKey = jiraConfig.getProjectKey();
-        this.username = jiraConfig.getJiraUsername();
-        this.password = jiraConfig.getJiraPassword();
-        this.jiraRestClient = getJiraRestClient();
-    }
-
-//    public static void main(String[] args) throws IOException {
+    public static void main(String[] args) {
 //
 //        JiraService myJiraClient = new JiraService();
 //
@@ -61,10 +52,10 @@ public class JiraService {
 ////        myJiraClient.deleteIssue(issueKey, true);
 //
 //        myJiraClient.jiraRestClient.close();
-//    }
+    }
 
     public String createTask(Order order) {
-        return createIssue(this.projectKey, ISSUE_TYPE, order.getTitle());
+        return createIssue(jiraConfig.getProjectKey(), ISSUE_TYPE, order.getTitle());
     }
 
     public Boolean updateTask(Order order, String issueKey, String githubTestsUrl, Integer telegramChannelPostId) {
@@ -72,12 +63,12 @@ public class JiraService {
         String telegramChannelUrl = "https://t.me/autotests_cloud/" + telegramChannelPostId;
         String content = format(
                 "*Price*: %s\n" +
-                "*Email*: %s\n\n" +
-                "*Github code*: %s\n" +
-                "*Jenkins job*: %s\n" +
-                "*Telegram discussion*: %s\n\n" +
-                "*Test steps*: \n" +
-                "{code}%s{code}",
+                        "*Email*: %s\n\n" +
+                        "*Github code*: %s\n" +
+                        "*Jenkins job*: %s\n" +
+                        "*Telegram discussion*: %s\n\n" +
+                        "*Test steps*: \n" +
+                        "{code}%s{code}",
                 order.getPrice(), order.getEmail(), githubTestsUrl, jenkinsJobUrl, telegramChannelUrl, order.getSteps());
 
         return updateIssueDescription(issueKey, content);
@@ -133,12 +124,4 @@ public class JiraService {
         jiraRestClient.getIssueClient().deleteIssue(issueKey, deleteSubtasks).claim();
     }
 
-    private JiraRestClient getJiraRestClient() {
-        return new AsynchronousJiraRestClientFactory()
-                .createWithBasicHttpAuthentication(getJiraUri(), this.username, this.password);
-    }
-
-    private URI getJiraUri() {
-        return URI.create(this.jiraUrl);
-    }
 }

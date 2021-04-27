@@ -5,30 +5,22 @@ import cloud.autotests.backend.models.Order;
 import kong.unirest.Unirest;
 import kong.unirest.json.JSONArray;
 import kong.unirest.json.JSONObject;
+import lombok.AllArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
+import static cloud.autotests.backend.config.TelegramConfig.GET_UPDATES_URL;
+import static cloud.autotests.backend.config.TelegramConfig.SEND_MESSAGE_URL;
 import static java.lang.String.format;
 
+@Service
+@AllArgsConstructor
 public class TelegramService {
     private static final Logger LOG = LoggerFactory.getLogger(TelegramService.class);
 
-    private final String SEND_MESSAGE_URL = "https://api.telegram.org/bot%s/sendMessage";
-    private final String GET_UPDATES_URL = "https://api.telegram.org/bot%s/getUpdates";
-
-    private final String channelId;
-    private final String chatId;
-    private final String sendMessageUrl;
-    private final String getUpdatesUrl;
-
-    @Autowired
-    public TelegramService(TelegramConfig telegramConfig) {
-        this.channelId = telegramConfig.getTelegramChannelId();
-        this.chatId = telegramConfig.getTelegramChatId();
-        this.sendMessageUrl = format(SEND_MESSAGE_URL, telegramConfig.telegramToken);
-        this.getUpdatesUrl = format(GET_UPDATES_URL, telegramConfig.telegramToken);
-    }
+    private final TelegramConfig telegramConfig;
 
     public Integer createChannelPost(Order order, String issueKey) {
         String message = format(
@@ -37,7 +29,7 @@ public class TelegramService {
                         "<u><b>Jira issue</b></u>: <a href=\"https://jira.autotests.cloud/browse/%s\">%s</a>\n",
                 order.getTitle(), order.getPrice(), issueKey, issueKey); // todo email
 
-        String body = format("chat_id=%s&text=%s&parse_mode=html", this.channelId, message);
+        String body = format("chat_id=%s&text=%s&parse_mode=html", telegramConfig.getChannelId(), message);
 
         return sendText(body);
     }
@@ -52,7 +44,7 @@ public class TelegramService {
                         "%s",
                 order.getTitle(), order.getPrice(), issueKey, issueKey, issueKey, issueKey, githubTestUrl); // todo email
 
-        String body = format("chat_id=%s&text=%s&parse_mode=html", this.channelId, message);
+        String body = format("chat_id=%s&text=%s&parse_mode=html", telegramConfig.getChannelId(), message);
 
         return sendText(body);
     }
@@ -64,11 +56,12 @@ public class TelegramService {
                 "Leave here any message to get notified";
 
         return sendText(format("chat_id=%s&reply_to_message_id=%s&text=%s&parse_mode=html",
-                this.chatId, chatMessageId, message));
+                telegramConfig.getChatId(), chatMessageId, message));
     }
 
     private Integer sendText(String body) {
-        JSONObject createMessageResponse = Unirest.post(this.sendMessageUrl)
+        String sendMessageUrl = format(SEND_MESSAGE_URL, telegramConfig.getToken());
+        JSONObject createMessageResponse = Unirest.post(sendMessageUrl)
                 .header("Content-Type", "application/x-www-form-urlencoded; charset=utf-8")
                 .body(body)
                 .asJson()
@@ -108,6 +101,7 @@ public class TelegramService {
     }
 
     public JSONArray getUpdates() {
+        String getUpdatesUrl = format(GET_UPDATES_URL, telegramConfig.getToken());
         return Unirest.post(getUpdatesUrl)
                 .asJson().getBody()
                 .getObject().getJSONArray("result");

@@ -7,12 +7,18 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 @Data
 public class JenkinsConfig {
+
+    public static final String CREATE_JOB_URL = "%s/createItem?name=%s";
+    public static final String LAUNCH_JOB_URL = "%s/job/%s/buildWithParameters";
+
+
     @Value("${jenkins.url}")
-    public String jenkinsUrl;
+    public String url;
 
     @Value("${jenkins.username}")
-    public String jenkinsUsername;
+    public String username;
 
     @Value("${jenkins.token}")
-    public String jenkinsToken;
+    public String token;
+
 }

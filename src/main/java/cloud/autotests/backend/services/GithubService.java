@@ -4,43 +4,36 @@ import cloud.autotests.backend.config.GithubConfig;
 import cloud.autotests.backend.models.Order;
 import kong.unirest.Unirest;
 import kong.unirest.json.JSONObject;
+import lombok.AllArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 import java.util.Base64;
 
+import static cloud.autotests.backend.config.GithubConfig.NEW_TEST_REPOSITORY_PATH;
+import static cloud.autotests.backend.config.GithubConfig.TEMPLATE_REPOSITORY_URL;
 import static cloud.autotests.backend.generators.tests.OnBoardingTestClassGenerator.generateOnBoardingTestClass;
 import static java.lang.String.format;
 
+@Service
+@AllArgsConstructor
 public class GithubService {
     private static final Logger LOG = LoggerFactory.getLogger(GithubService.class);
 
-    private final String TEMPLATE_REPOSITORY_URL = "https://api.github.com/repos/%s/%s/generate";
-    private final String NEW_TEST_REPOSITORY_PATH = "https://api.github.com/repos/%s/%s/contents/" +
-            "src/test/java/cloud/autotests/tests/%sTests.java";
-
-    private final String githubToken;
-    private final String githubTemplateRepositoryApiUrl;
-    private final String githubGeneratedOwner;
-
-    @Autowired
-    public GithubService(GithubConfig githubConfig) {
-        this.githubToken = githubConfig.getGithubToken();
-        this.githubTemplateRepositoryApiUrl = format(TEMPLATE_REPOSITORY_URL,
-                githubConfig.getGithubTemplateOwner(), githubConfig.getGithubTemplateRepository());
-        this.githubGeneratedOwner = githubConfig.getGithubGeneratedOwner();
-    }
+    private final GithubConfig githubConfig;
 
     public String createRepositoryFromTemplate(String jiraIssueKey) {
         String bodyTemplate = "{\"owner\": \"%s\", \"name\": \"%s\"}";
-        String body = format(bodyTemplate, this.githubGeneratedOwner, jiraIssueKey);
+        String body = format(bodyTemplate, githubConfig.getGithubGeneratedOwner(), jiraIssueKey);
+        String githubTemplateRepositoryApiUrl = format(TEMPLATE_REPOSITORY_URL,
+                githubConfig.getGithubTemplateOwner(), githubConfig.getGithubTemplateRepository());
 
         JSONObject createRepositoryResponse = Unirest
-                .post(this.githubTemplateRepositoryApiUrl)
+                .post(githubTemplateRepositoryApiUrl)
                 .header("Accept", "application/vnd.github.baptiste-preview+json")
                 .header("Content-Type", "application/json; charset=utf-8")
-                .header("Authorization", "token " + this.githubToken)
+                .header("Authorization", "token " + githubConfig.getGithubToken())
                 .body(body)
                 .asJson()
                 .ifFailure(response -> {
@@ -78,7 +71,7 @@ public class GithubService {
         String testClassContent64 = Base64.getEncoder().encodeToString(generatedTestsContent.getBytes());
 
         String testClassPath = format(NEW_TEST_REPOSITORY_PATH,
-                this.githubGeneratedOwner, jiraIssueKey, testClassNamePrefix);
+                githubConfig.getGithubGeneratedOwner(), jiraIssueKey, testClassNamePrefix);
 
         String bodyTemplate = "{\"message\": \"Added test '%s'\", \"content\": \"%s\"}";
         String body = format(bodyTemplate, order.getTitle(), testClassContent64);
@@ -87,7 +80,7 @@ public class GithubService {
                 .put(testClassPath)
                 .header("Accept", "application/vnd.github.v3+json")
                 .header("Content-Type", "application/json; charset=utf-8")
-                .header("Authorization", "token " + this.githubToken)
+                .header("Authorization", "token " + githubConfig.getGithubToken())
                 .body(body)
                 .asJson()
                 .ifFailure(response -> {
