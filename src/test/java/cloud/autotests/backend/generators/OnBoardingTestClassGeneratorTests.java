@@ -41,7 +41,6 @@ public class OnBoardingTestClassGeneratorTests {
         assertThat(generatedTestClass).isEqualTo(expectedTestClass);
     }
 
-
     @Test
     void generateFromUrlTestMethodsTest() {
         String generatedTestMethods = generateFromUrlTestMethods(order);
@@ -49,7 +48,6 @@ public class OnBoardingTestClassGeneratorTests {
 
         assertThat(generatedTestMethods).isEqualTo(expectedTestMethods);
     }
-
 
     @Test
     void generateFromWrongUrlTestMethodsTest() {

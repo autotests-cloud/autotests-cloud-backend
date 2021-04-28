@@ -10,6 +10,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.messaging.simp.SimpMessageSendingOperations;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -34,6 +35,9 @@ public class OrderController {
     @Autowired
     TelegramService telegramService;
 
+    @Autowired
+    public SimpMessageSendingOperations messagingTemplate;
+
     @GetMapping
     public ResponseEntity<List<Order>> getOrders() {
 
@@ -43,6 +47,16 @@ public class OrderController {
     @PostMapping
     public ResponseEntity createOrder(@RequestBody Order rawOrder) throws InterruptedException {
         Order order = cleanOrder(rawOrder);
+
+//
+//        sleep(1000);
+//        messagingTemplate.convertAndSend( "/topic/greetings", new Greeting( "bye, " + message   + "!" ) );
+//        sleep(1000);
+//        messagingTemplate.convertAndSend( "/topic/greetings", new Greeting( "bye1, " + message   + "!" ) );
+//        sleep(1000);
+//        messagingTemplate.convertAndSend( "/topic/greetings", new Greeting( "bye2, " + message   + "!" ) );
+//
+
 
         String jiraIssueKey = jiraService.createTask(order);
         if (jiraIssueKey == null) {

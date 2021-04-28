@@ -21,8 +21,8 @@ public class CleanContentUtils {
                 .replace("\r", "\n")
                 .replace("\"", "\\\"")
 //                .replace("\\", "\\\\")
-                .replace("{code}", "")
-                .replace("</code>", "")
+                .replace("{code}", "") // jira markdown
+                .replace("</code>", "") //
                 .replace("<code>", "")
                 .split("\n");
 
