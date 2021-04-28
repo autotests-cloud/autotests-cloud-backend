@@ -229,4 +229,7 @@ fi&#xd;
     </hudson.plugins.postbuildtask.PostbuildTask>
   </publishers>
   <buildWrappers/>
+    <buildWrappers>
+      <hudson.plugins.timestamper.TimestamperBuildWrapper plugin="timestamper@1.12"/>
+    </buildWrappers>
 </project>
