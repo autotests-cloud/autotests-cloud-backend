@@ -1,9 +1,6 @@
 package cloud.autotests.backend.controllers;
 
-import cloud.autotests.backend.models.JiraIssue;
-import cloud.autotests.backend.models.Order;
-import cloud.autotests.backend.models.TelegramMessage;
-import cloud.autotests.backend.models.WebsocketMessage;
+import cloud.autotests.backend.models.*;
 import cloud.autotests.backend.services.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -49,6 +46,20 @@ public class OrderController {
             return;
         }
 
+        webSocketService.sendMessage(uniqueUserId,
+                new WebsocketMessage()
+                        .setContentType("generated")
+                        .setContent("Jira issue created (authorization required): ")
+                        .setUrl(jiraIssueUrl)
+                        .setUrlText(jiraIssueKey));
+        webSocketService.sendMessage(uniqueUserId,
+                new WebsocketMessage()
+                        .setContentType("info")
+                        .setContent("Our engineers are already working on it"));
+        webSocketService.sendMessage(uniqueUserId,
+                new WebsocketMessage()
+                        .setContentType("empty"));
+
         String githubRepositoryUrl = githubService.createRepositoryFromTemplate(jiraIssueKey);
         if (githubRepositoryUrl == null) {
             webSocketService.sendMessage(uniqueUserId,
@@ -61,21 +72,21 @@ public class OrderController {
         webSocketService.sendMessage(uniqueUserId,
                 new WebsocketMessage()
                         .setContentType("generated")
-                        .setContent("Github repository created"));
-        webSocketService.sendMessage(uniqueUserId,
-                new WebsocketMessage()
-                        .setContentType("green-link")
-                        .setUrl(githubRepositoryUrl));
+                        .setContent("Github repository created: ")
+                        .setUrl(githubRepositoryUrl)
+                        .setUrlText(githubRepositoryUrl.replace("https://", "")));
 
         sleep(2000);
-        String githubTestsUrl = githubService.generateTests(order, jiraIssueKey);
-        if (githubTestsUrl == null) {
+        GithubTestClass githubTests = githubService.generateTests(order, jiraIssueKey);
+        if (githubTests == null) {
             webSocketService.sendMessage(uniqueUserId,
                     new WebsocketMessage()
                             .setContentType("error")
                             .setContent("Cant create tests class in github"));
             return;
         }
+        String githubTestsUrl = githubTests.getUrl();
+        String githubTestsUrlText = githubTests.getUrlText();
 
         TelegramMessage telegramChannelPostObject = telegramService.createChannelPost(order, jiraIssue, githubTestsUrl);
         if (telegramChannelPostObject == null) {
@@ -88,8 +99,8 @@ public class OrderController {
         Integer telegramChannelPostId = telegramChannelPostObject.getId();
         String telegramChannelName = telegramChannelPostObject.getName();
 
-
         TelegramMessage telegramChatMessageObject = telegramService.awaitChatMessageObject(telegramChannelPostId);
+        // todo add exception
         String telegramChatName = telegramChatMessageObject.getName();
         Integer telegramChatMessageId = telegramChatMessageObject.getId();
 
@@ -101,11 +112,9 @@ public class OrderController {
         webSocketService.sendMessage(uniqueUserId,
                 new WebsocketMessage()
                         .setContentType("generated")
-                        .setContent("Autotests code generated"));
-        webSocketService.sendMessage(uniqueUserId,
-                new WebsocketMessage()
-                        .setContentType("green-link")
-                        .setUrl(githubTestsUrl));
+                        .setContent("Autotests code generated: ")
+                        .setUrl(githubTestsUrl)
+                        .setUrlText(githubTestsUrlText));
         webSocketService.sendMessage(uniqueUserId,
                 new WebsocketMessage()
                         .setContentType("info")
@@ -117,20 +126,16 @@ public class OrderController {
         webSocketService.sendMessage(uniqueUserId,
                 new WebsocketMessage()
                         .setContentType("generated")
-                        .setContent("Jenkins job created"));
-        webSocketService.sendMessage(uniqueUserId,
-                new WebsocketMessage()
-                        .setContentType("green-link")
-                        .setUrl(jenkinsJobUrl));
+                        .setContent("Jenkins job created: ")
+                        .setUrl(jenkinsJobUrl)
+                        .setUrlText(jenkinsJobUrl.replace("https://", "")));
 
         webSocketService.sendMessage(uniqueUserId,
                 new WebsocketMessage()
                         .setContentType("generated")
-                        .setContent("Jenkins job launched, autotests are running..."));
-        webSocketService.sendMessage(uniqueUserId,
-                new WebsocketMessage()
-                        .setContentType("green-link")
-                        .setUrl(jenkinsJobUrl + "/1/console"));
+                        .setContent("Jenkins job launched, autotests are running (~1 min): ")
+                        .setUrl(jenkinsJobUrl + "/1/console")
+                        .setUrlText("/1/console"));
         webSocketService.sendMessage(uniqueUserId,
                 new WebsocketMessage()
                         .setContentType("info")
@@ -146,25 +151,13 @@ public class OrderController {
         webSocketService.sendMessage(uniqueUserId,
                 new WebsocketMessage()
                         .setContentType("generated")
-                        .setContent("Jenkins job finished. Report available with test details, screenshots, logs, videos"));
+                        .setContent("Jenkins job finished: ")
+                        .setUrl(jenkinsJobUrl + "/1/allure")
+                        .setUrlText("/1/allure"));
         webSocketService.sendMessage(uniqueUserId,
                 new WebsocketMessage()
-                        .setContentType("green-link")
-                        .setUrl(jenkinsJobUrl + "/1/allure"));
-
-        webSocketService.sendMessage(uniqueUserId,
-                new WebsocketMessage()
-                        .setContentType("telegram-notification")
-                        .setContent(telegramChatName + "/" + telegramChatMessageId));
-
-        webSocketService.sendMessage(uniqueUserId,
-                new WebsocketMessage()
-                        .setContentType("generated")
-                        .setContent("Jira issue created (available for qa.guru engineers only)"));
-        webSocketService.sendMessage(uniqueUserId,
-                new WebsocketMessage()
-                        .setContentType("green-link")
-                        .setUrl(jiraIssueUrl));
+                        .setContentType("info")
+                        .setContent("Report available with test details, screenshots, logs, videos"));
         webSocketService.sendMessage(uniqueUserId,
                 new WebsocketMessage()
                         .setContentType("empty"));
@@ -181,13 +174,19 @@ public class OrderController {
                 telegramChannelName, telegramChannelPostId, telegramChatMessageId);
         webSocketService.sendMessage(uniqueUserId,
                 new WebsocketMessage()
-                        .setContentType("info")
-                        .setContent("Telegram chat started. Join to specify and discuss your task!"));
+                        .setContentType("telegram-info")
+                        .setContent("Telegram chat started: ")
+                        .setUrl(telegramDiscussionUrl)
+                        .setUrlText(telegramDiscussionUrl.replace("https://", "")));
         webSocketService.sendMessage(uniqueUserId,
                 new WebsocketMessage()
-                        .setContentType("blue-link")
-                        .setUrl(telegramDiscussionUrl));
+                        .setContentType("info")
+                        .setContent("Join to discuss and specify your task!"));
 
+        webSocketService.sendMessage(uniqueUserId,
+                new WebsocketMessage()
+                        .setContentType("telegram-notification")
+                        .setContent(telegramChatName + "/" + telegramChatMessageId));
     }
 
 }

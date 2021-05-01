@@ -1,6 +1,7 @@
 package cloud.autotests.backend.services;
 
 import cloud.autotests.backend.config.GithubConfig;
+import cloud.autotests.backend.models.GithubTestClass;
 import cloud.autotests.backend.models.Order;
 import kong.unirest.Unirest;
 import kong.unirest.json.JSONObject;
@@ -11,8 +12,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.Base64;
 
-import static cloud.autotests.backend.config.GithubConfig.NEW_TEST_REPOSITORY_PATH;
-import static cloud.autotests.backend.config.GithubConfig.TEMPLATE_REPOSITORY_URL;
+import static cloud.autotests.backend.config.GithubConfig.*;
 import static cloud.autotests.backend.generators.tests.OnBoardingTestClassGenerator.generateOnBoardingTestClass;
 import static java.lang.String.format;
 
@@ -26,7 +26,7 @@ public class GithubService {
     public String createRepositoryFromTemplate(String jiraIssueKey) {
         String bodyTemplate = "{\"owner\": \"%s\", \"name\": \"%s\"}";
         String body = format(bodyTemplate, githubConfig.getGithubGeneratedOwner(), jiraIssueKey);
-        String githubTemplateRepositoryApiUrl = format(TEMPLATE_REPOSITORY_URL,
+        String githubTemplateRepositoryApiUrl = format(API_TEMPLATE_REPOSITORY_URL,
                 githubConfig.getGithubTemplateOwner(), githubConfig.getGithubTemplateRepository());
 
         JSONObject createRepositoryResponse = Unirest
@@ -65,12 +65,12 @@ public class GithubService {
          */
     }
 
-    public String generateTests(Order order, String jiraIssueKey) {
+    public GithubTestClass generateTests(Order order, String jiraIssueKey) {
         final String testClassNamePrefix = "App";
         String generatedTestsContent = generateOnBoardingTestClass(testClassNamePrefix, order);
         String testClassContent64 = Base64.getEncoder().encodeToString(generatedTestsContent.getBytes());
 
-        String testClassPath = format(NEW_TEST_REPOSITORY_PATH,
+        String testClassPath = format(API_NEW_TEST_CLASS_PATH,
                 githubConfig.getGithubGeneratedOwner(), jiraIssueKey, testClassNamePrefix);
 
         String bodyTemplate = "{\"message\": \"Added test '%s'\", \"content\": \"%s\"}";
@@ -102,7 +102,9 @@ public class GithubService {
         if (createTestsResponse.has("content")) {
             JSONObject contentJson = createTestsResponse.getJSONObject("content");
             if (contentJson.has("html_url")) {
-                return contentJson.getString("html_url");
+                return new GithubTestClass()
+                        .setUrl(contentJson.getString("html_url"))
+                        .setUrlText(format(NEW_TEST_CLASS_SHORTENED_URL, testClassNamePrefix));
             } else {
                 return null; // todo add exception
             }
