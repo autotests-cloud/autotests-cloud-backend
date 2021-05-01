@@ -8,6 +8,7 @@ import lombok.experimental.Accessors;
 @Accessors(chain = true)
 public class WebsocketMessage {
 
+	private String prefix;
 	private String content;
 	private String contentType;
 	private String url;
