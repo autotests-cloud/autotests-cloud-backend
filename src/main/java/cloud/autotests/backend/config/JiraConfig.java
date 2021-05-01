@@ -12,6 +12,8 @@ import java.net.URI;
 @Configuration
 @Data
 public class JiraConfig {
+    public static final String JIRA_ISSUE_URL_TEMPLATE = "%s/browse/%s";
+
     @Value("${jira.url}")
     public String url;
 

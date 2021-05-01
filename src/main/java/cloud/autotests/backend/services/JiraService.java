@@ -1,9 +1,11 @@
 package cloud.autotests.backend.services;
 
 import cloud.autotests.backend.config.JiraConfig;
+import cloud.autotests.backend.models.JiraIssue;
 import cloud.autotests.backend.models.Order;
 import com.atlassian.jira.rest.client.api.IssueRestClient;
 import com.atlassian.jira.rest.client.api.JiraRestClient;
+import com.atlassian.jira.rest.client.api.domain.BasicIssue;
 import com.atlassian.jira.rest.client.api.domain.BasicVotes;
 import com.atlassian.jira.rest.client.api.domain.Comment;
 import com.atlassian.jira.rest.client.api.domain.Issue;
@@ -18,6 +20,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
+import static cloud.autotests.backend.config.JiraConfig.JIRA_ISSUE_URL_TEMPLATE;
 import static java.lang.String.format;
 
 @Service
@@ -54,8 +57,16 @@ public class JiraService {
 //        myJiraClient.jiraRestClient.close();
     }
 
-    public String createTask(Order order) {
-        return createIssue(jiraConfig.getProjectKey(), ISSUE_TYPE, order.getTitle());
+    public JiraIssue createTask(Order order) {
+        BasicIssue basicIssue = createIssue(jiraConfig.getProjectKey(), ISSUE_TYPE, order.getTitle());
+        String issueKey = basicIssue.getKey();
+
+        if (issueKey != null) {
+            String jiraIssueUrl = format(JIRA_ISSUE_URL_TEMPLATE, jiraConfig.getUrl(), issueKey);
+            return new JiraIssue().setKey(issueKey).setUrl(jiraIssueUrl);
+        }
+
+        return null;
     }
 
     public Boolean updateTask(Order order, String issueKey, String githubTestsUrl, Integer telegramChannelPostId) {
@@ -74,12 +85,12 @@ public class JiraService {
         return updateIssueDescription(issueKey, content);
     }
 
-    private String createIssue(String projectKey, Long issueType, String issueSummary) {
+    private BasicIssue createIssue(String projectKey, Long issueType, String issueSummary) {
         IssueRestClient issueClient = jiraRestClient.getIssueClient();
 
         IssueInput issueInput = new IssueInputBuilder(projectKey, issueType, issueSummary).build();
 
-        return issueClient.createIssue(issueInput).claim().getKey();
+        return issueClient.createIssue(issueInput).claim();
     }
 
     private Issue getIssue(String issueKey) {

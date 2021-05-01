@@ -1,119 +1,193 @@
 package cloud.autotests.backend.controllers;
 
+import cloud.autotests.backend.models.JiraIssue;
 import cloud.autotests.backend.models.Order;
-import cloud.autotests.backend.services.GithubService;
-import cloud.autotests.backend.services.JenkinsService;
-import cloud.autotests.backend.services.JiraService;
-import cloud.autotests.backend.services.TelegramService;
+import cloud.autotests.backend.models.TelegramMessage;
+import cloud.autotests.backend.models.WebsocketMessage;
+import cloud.autotests.backend.services.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.messaging.simp.SimpMessageSendingOperations;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.messaging.handler.annotation.DestinationVariable;
+import org.springframework.messaging.handler.annotation.MessageMapping;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.RequestBody;
 
-import java.util.List;
-
+import static cloud.autotests.backend.config.TelegramConfig.TELEGRAM_DISCUSSION_URL_TEMPLATE;
 import static cloud.autotests.backend.utils.CleanContentUtils.cleanOrder;
+import static java.lang.String.format;
 import static java.lang.Thread.sleep;
 
-@RestController
-@RequestMapping("orders")
+@Controller
 public class OrderController {
     private static final Logger LOG = LoggerFactory.getLogger(OrderController.class);
 
     @Autowired
+    WebSocketService webSocketService;
+    @Autowired
     JiraService jiraService;
-
     @Autowired
     GithubService githubService;
-
     @Autowired
     JenkinsService jenkinsService;
-
     @Autowired
     TelegramService telegramService;
 
-    @Autowired
-    public SimpMessageSendingOperations messagingTemplate;
-
-    @GetMapping
-    public ResponseEntity<List<Order>> getOrders() {
-
-        return new ResponseEntity<>(List.of(new Order(), new Order()), HttpStatus.OK);
-    }
-
-    @PostMapping
-    public ResponseEntity createOrder(@RequestBody Order rawOrder) throws InterruptedException {
+    @MessageMapping("/orders/{uniqueUserId}")
+    public void createOrder(@DestinationVariable("uniqueUserId") String uniqueUserId, @RequestBody Order rawOrder) throws InterruptedException {
         Order order = cleanOrder(rawOrder);
 
-//
-//        sleep(1000);
-//        messagingTemplate.convertAndSend( "/topic/greetings", new Greeting( "bye, " + message   + "!" ) );
-//        sleep(1000);
-//        messagingTemplate.convertAndSend( "/topic/greetings", new Greeting( "bye1, " + message   + "!" ) );
-//        sleep(1000);
-//        messagingTemplate.convertAndSend( "/topic/greetings", new Greeting( "bye2, " + message   + "!" ) );
-//
+        JiraIssue jiraIssue = jiraService.createTask(order); // todo move
+        String jiraIssueKey = jiraIssue.getKey();
+        String jiraIssueUrl = jiraIssue.getUrl();
 
-
-        String jiraIssueKey = jiraService.createTask(order);
         if (jiraIssueKey == null) {
-            return new ResponseEntity<>("Cant create jira issue", HttpStatus.INTERNAL_SERVER_ERROR);
+            webSocketService.sendMessage(uniqueUserId,
+                    new WebsocketMessage()
+                            .setContentType("error")
+                            .setContent("Cant create jira issue"));
+            return;
         }
 
         String githubRepositoryUrl = githubService.createRepositoryFromTemplate(jiraIssueKey);
         if (githubRepositoryUrl == null) {
-            return new ResponseEntity<>("Cant create github repository", HttpStatus.INTERNAL_SERVER_ERROR);
+            webSocketService.sendMessage(uniqueUserId,
+                    new WebsocketMessage()
+                            .setContentType("error")
+                            .setContent("Cant create github repository"));
+            return;
         }
+
+        webSocketService.sendMessage(uniqueUserId,
+                new WebsocketMessage()
+                        .setContentType("generated")
+                        .setContent("Github repository created"));
+        webSocketService.sendMessage(uniqueUserId,
+                new WebsocketMessage()
+                        .setContentType("green-link")
+                        .setUrl(githubRepositoryUrl));
 
         sleep(2000);
         String githubTestsUrl = githubService.generateTests(order, jiraIssueKey);
         if (githubTestsUrl == null) {
-            return new ResponseEntity<>("Cant create tests class in github", HttpStatus.INTERNAL_SERVER_ERROR);
+            webSocketService.sendMessage(uniqueUserId,
+                    new WebsocketMessage()
+                            .setContentType("error")
+                            .setContent("Cant create tests class in github"));
+            return;
         }
 
-        Integer telegramChannelPostId = telegramService.createChannelPost(order, jiraIssueKey, githubTestsUrl);
-        if (telegramChannelPostId == null) {
-            return new ResponseEntity<>("Cant create telegram channel post", HttpStatus.INTERNAL_SERVER_ERROR);
+        TelegramMessage telegramChannelPostObject = telegramService.createChannelPost(order, jiraIssue, githubTestsUrl);
+        if (telegramChannelPostObject == null) {
+            webSocketService.sendMessage(uniqueUserId,
+                    new WebsocketMessage()
+                            .setContentType("error")
+                            .setContent("Cant create telegram channel post"));
+            return;
         }
+        Integer telegramChannelPostId = telegramChannelPostObject.getId();
+        String telegramChannelName = telegramChannelPostObject.getName();
 
-        sleep(5000);
-        Integer telegramChatMessageId = telegramService.getChatMessageId(telegramChannelPostId); // todo awaitility
 
-        jenkinsService.createJob(order, jiraIssueKey, githubRepositoryUrl, telegramChatMessageId);
+        TelegramMessage telegramChatMessageObject = telegramService.awaitChatMessageObject(telegramChannelPostId);
+        String telegramChatName = telegramChatMessageObject.getName();
+        Integer telegramChatMessageId = telegramChatMessageObject.getId();
+
+        String jenkinsJobUrl = jenkinsService.createJob(order, jiraIssueKey,
+                githubRepositoryUrl, telegramChatMessageId);
+
         jenkinsService.launchJob(jiraIssueKey);
+
+        webSocketService.sendMessage(uniqueUserId,
+                new WebsocketMessage()
+                        .setContentType("generated")
+                        .setContent("Autotests code generated"));
+        webSocketService.sendMessage(uniqueUserId,
+                new WebsocketMessage()
+                        .setContentType("green-link")
+                        .setUrl(githubTestsUrl));
+        webSocketService.sendMessage(uniqueUserId,
+                new WebsocketMessage()
+                        .setContentType("info")
+                        .setContent("Code stack: Java, Gradle, JUnit5, AssertJ, Owner, Rest-Assured, Selenium, Selenide, Allure"));
+        webSocketService.sendMessage(uniqueUserId,
+                new WebsocketMessage()
+                        .setContentType("empty"));
+
+        webSocketService.sendMessage(uniqueUserId,
+                new WebsocketMessage()
+                        .setContentType("generated")
+                        .setContent("Jenkins job created"));
+        webSocketService.sendMessage(uniqueUserId,
+                new WebsocketMessage()
+                        .setContentType("green-link")
+                        .setUrl(jenkinsJobUrl));
+
+        webSocketService.sendMessage(uniqueUserId,
+                new WebsocketMessage()
+                        .setContentType("generated")
+                        .setContent("Jenkins job launched, autotests are running..."));
+        webSocketService.sendMessage(uniqueUserId,
+                new WebsocketMessage()
+                        .setContentType("green-link")
+                        .setUrl(jenkinsJobUrl + "/1/console"));
+        webSocketService.sendMessage(uniqueUserId,
+                new WebsocketMessage()
+                        .setContentType("info")
+                        .setContent("Infrastructure stack: Github, Jenkins, Docker, Selenoid"));
+
+//        telegramService.addOnBoardingMessage(telegramChatMessageId);
+////        if (telegramChatMessageId == null) {
+////            return new ResponseEntity<>("Cant add comment to telegram channel post", HttpStatus.INTERNAL_SERVER_ERROR);
+////        }
+
+        jenkinsService.awaitJobFinished(jiraIssueKey);
+
+        webSocketService.sendMessage(uniqueUserId,
+                new WebsocketMessage()
+                        .setContentType("generated")
+                        .setContent("Jenkins job finished. Report available with test details, screenshots, logs, videos"));
+        webSocketService.sendMessage(uniqueUserId,
+                new WebsocketMessage()
+                        .setContentType("green-link")
+                        .setUrl(jenkinsJobUrl + "/1/allure"));
+
+        webSocketService.sendMessage(uniqueUserId,
+                new WebsocketMessage()
+                        .setContentType("telegram-notification")
+                        .setContent(telegramChatName + "/" + telegramChatMessageId));
+
+        webSocketService.sendMessage(uniqueUserId,
+                new WebsocketMessage()
+                        .setContentType("generated")
+                        .setContent("Jira issue created (available for qa.guru engineers only)"));
+        webSocketService.sendMessage(uniqueUserId,
+                new WebsocketMessage()
+                        .setContentType("green-link")
+                        .setUrl(jiraIssueUrl));
+        webSocketService.sendMessage(uniqueUserId,
+                new WebsocketMessage()
+                        .setContentType("empty"));
 
         Boolean jiraUpdateIssueResult = jiraService.updateTask(order, jiraIssueKey, githubTestsUrl, telegramChannelPostId);
         if (jiraUpdateIssueResult == null) {
-            return new ResponseEntity<>("Cant update jira issue", HttpStatus.INTERNAL_SERVER_ERROR);
+            webSocketService.sendMessage(uniqueUserId,
+                    new WebsocketMessage()
+                            .setContentType("error")
+                            .setContent("Cant update jira issue"));
         }
 
-        telegramService.addOnBoardingMessage(telegramChatMessageId);
-        if (telegramChatMessageId == null) {
-            return new ResponseEntity<>("Cant add comment to telegram channel post", HttpStatus.INTERNAL_SERVER_ERROR);
-        }
+        String telegramDiscussionUrl = format(TELEGRAM_DISCUSSION_URL_TEMPLATE,
+                telegramChannelName, telegramChannelPostId, telegramChatMessageId);
+        webSocketService.sendMessage(uniqueUserId,
+                new WebsocketMessage()
+                        .setContentType("info")
+                        .setContent("Telegram chat started. Join to specify and discuss your task!"));
+        webSocketService.sendMessage(uniqueUserId,
+                new WebsocketMessage()
+                        .setContentType("blue-link")
+                        .setUrl(telegramDiscussionUrl));
 
-        return new ResponseEntity<>(telegramChannelPostId, HttpStatus.CREATED);
-    }
-
-    @GetMapping("/{order}")
-    public ResponseEntity<Order> getOrderById(@PathVariable String order) {
-        // return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        return new ResponseEntity<>(new Order(), HttpStatus.OK);
-    }
-
-    @PutMapping
-    public ResponseEntity<Order> updateOrder(@RequestBody Order order) {
-
-        return new ResponseEntity<>(order, HttpStatus.OK);
-    }
-
-    @DeleteMapping("/{order}")
-    public ResponseEntity deleteOrder(@PathVariable String order) {
-
-        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
 }

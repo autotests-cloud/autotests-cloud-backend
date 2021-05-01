@@ -10,7 +10,7 @@ public class TelegramConfig {
 
     public static final String SEND_MESSAGE_URL = "https://api.telegram.org/bot%s/sendMessage";
     public static final String GET_UPDATES_URL = "https://api.telegram.org/bot%s/getUpdates";
-
+    public static final String TELEGRAM_DISCUSSION_URL_TEMPLATE = "https://t.me/%s/%s?comment=%s";
 
     @Value("${telegram.token}")
     public String token;
