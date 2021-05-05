@@ -29,7 +29,7 @@ public class OnBoardingTestClassGenerator {
     public static String generateFromStepsTestMethod(Order order) { // todo add link to Jira issue
         String testMethodDescription = "Soon to be implemented by QA.GURU engineers";
         String testMethodNamePrefix = "generated";
-        String stepContent = "// todo";
+        String stepContent = "// todo just add selenium action";
 
         StringBuilder testSteps = new StringBuilder();
         String[] steps = order.getSteps().split("\n");

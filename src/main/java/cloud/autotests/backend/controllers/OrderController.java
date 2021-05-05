@@ -10,6 +10,8 @@ import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestBody;
 
+import javax.servlet.http.HttpServletRequest;
+
 import static cloud.autotests.backend.config.TelegramConfig.TELEGRAM_DISCUSSION_URL_TEMPLATE;
 import static cloud.autotests.backend.utils.CleanContentUtils.cleanOrder;
 import static java.lang.String.format;
@@ -31,7 +33,7 @@ public class OrderController {
     TelegramService telegramService;
 
     @MessageMapping("/orders/{uniqueUserId}")
-    public void createOrder(@DestinationVariable("uniqueUserId") String uniqueUserId, @RequestBody Order rawOrder) throws InterruptedException {
+    public void createOrder(@DestinationVariable("uniqueUserId") String uniqueUserId, @RequestBody Order rawOrder, HttpServletRequest request) throws InterruptedException {
         Order order = cleanOrder(rawOrder);
 
         JiraIssue jiraIssue = jiraService.createTask(order); // todo move
