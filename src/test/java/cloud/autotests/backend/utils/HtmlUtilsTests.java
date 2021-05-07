@@ -12,8 +12,6 @@ import java.util.Map;
 
 import static cloud.autotests.backend.utils.HtmlUtils.*;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class HtmlUtilsTests {
 
@@ -27,7 +25,6 @@ public class HtmlUtilsTests {
         title = getTitleValue(htmlDom);
         headers = getHeaderValues(htmlDom);
     }
-
 
 
     @Test
