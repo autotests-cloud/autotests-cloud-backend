@@ -35,4 +35,6 @@ out/
 
 ### VS Code ###
 .vscode/
-.properties
+
+/src/main/resources/application.properties
+Dockerfile
