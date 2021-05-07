@@ -1,13 +1,16 @@
 package cloud.autotests.backend.config;
 
-import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.stereotype.Component;
+import lombok.Data;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Configuration;
 
-@Component
-@ConfigurationProperties(prefix = "google.recaptcha.key")
+@Configuration
+@Data
 public class CaptchaConfig {
 
+    @Value("${google.recaptcha.key.site}")
     private String site;
+    @Value("${google.recaptcha.key.secret}")
     private String secret;
 
 }

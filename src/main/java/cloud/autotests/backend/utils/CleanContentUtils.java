@@ -51,6 +51,7 @@ public class CleanContentUtils {
         cleanOrder.setEmail(cutCleanText(rawOrder.getEmail(), 100));
         cleanOrder.setTitle(cutCleanText(rawOrder.getTitle(), 140));
         cleanOrder.setSteps(cutCleanText(rawOrder.getSteps(), 1500));
+        cleanOrder.setCaptcha(cutCleanText(rawOrder.getCaptcha(), 1000));
         LOG.info("\n[CLEAN ORDER]\n{}\n", cleanOrder);
 
         return cleanOrder;

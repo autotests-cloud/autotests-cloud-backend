@@ -15,15 +15,15 @@ public class AppTests extends TestBase {
     @DisplayName("Some test title")
     void generatedTest() {
         step("make tests https://selenide.org", () -> {
-            // todo
+            // todo just add selenium action
         });
 
         step("make more", () -> {
-            // todo
+            // todo just add selenium action
         });
 
         step("not war", () -> {
-            // todo
+            // todo just add selenium action
         });
     }
 

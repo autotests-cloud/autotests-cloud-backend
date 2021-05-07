@@ -1,34 +1,36 @@
 package cloud.autotests.backend.services;
 
+import cloud.autotests.backend.captcha.GoogleResponse;
 import cloud.autotests.backend.config.CaptchaConfig;
+import cloud.autotests.backend.exceptions.ReCaptchaInvalidException;
+import kong.unirest.Unirest;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.client.RestOperations;
+import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 
 import java.util.regex.Pattern;
 
-public class CaptchaService implements ICaptchaService {
+import static java.lang.String.format;
 
-    @Autowired
-    private CaptchaConfig CaptchaConfig;
-
-    @Autowired
-    private RestOperations restTemplate;
+@Service
+public class CaptchaService {
 
     private static Pattern RESPONSE_PATTERN = Pattern.compile("[A-Za-z0-9_-]+");
+    @Autowired
+    private CaptchaConfig captchaConfig;
 
-    @Override
-    public void processResponse(String response) {
-        if(!responseSanityCheck(response)) {
-            throw new InvalidReCaptchaException("Response contains invalid characters");
+    public void processResponse(String response, String clientIp) {
+        if (!responseSanityCheck(response)) {
+            throw new ReCaptchaInvalidException("Response contains invalid characters");
         }
 
-        URI verifyUri = URI.create(String.format(
+        String validationUrl = format(
                 "https://www.google.com/recaptcha/api/siteverify?secret=%s&response=%s&remoteip=%s",
-                getReCaptchaSecret(), response, getClientIP()));
+                captchaConfig.getSecret(), response, clientIp);
 
-        GoogleResponse googleResponse = restTemplate.getForObject(verifyUri, GoogleResponse.class);
+        GoogleResponse googleResponse = Unirest.get(validationUrl).asObject(GoogleResponse.class).getBody();
 
-        if(!googleResponse.isSuccess()) {
+        if (!googleResponse.isSuccess()) {
             throw new ReCaptchaInvalidException("reCaptcha was not successfully validated");
         }
     }

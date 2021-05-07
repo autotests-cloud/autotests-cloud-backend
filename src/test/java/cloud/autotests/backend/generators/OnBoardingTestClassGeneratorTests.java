@@ -22,6 +22,7 @@ public class OnBoardingTestClassGeneratorTests {
     private static final String email = "a@a.a";
     private static final String title = "Some test title";
     private static final String steps = "make tests https://selenide.org\nmake more\nnot war";
+    private static final String captcha = "no";
 
     @BeforeAll
     static void initContent() {
@@ -30,6 +31,7 @@ public class OnBoardingTestClassGeneratorTests {
         rawOrder.setEmail(email);
         rawOrder.setTitle(title);
         rawOrder.setSteps(steps);
+        rawOrder.setCaptcha(captcha);
         order = cleanOrder(rawOrder);
     }
 

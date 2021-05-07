@@ -1,5 +1,6 @@
 package cloud.autotests.backend.controllers;
 
+import cloud.autotests.backend.exceptions.ReCaptchaInvalidException;
 import cloud.autotests.backend.models.*;
 import cloud.autotests.backend.services.*;
 import org.slf4j.Logger;
@@ -7,6 +8,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.handler.annotation.DestinationVariable;
 import org.springframework.messaging.handler.annotation.MessageMapping;
+import org.springframework.messaging.simp.SimpMessageHeaderAccessor;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestBody;
 
@@ -24,6 +26,8 @@ public class OrderController {
     @Autowired
     WebSocketService webSocketService;
     @Autowired
+    CaptchaService captchaService;
+    @Autowired
     JiraService jiraService;
     @Autowired
     GithubService githubService;
@@ -33,8 +37,22 @@ public class OrderController {
     TelegramService telegramService;
 
     @MessageMapping("/orders/{uniqueUserId}")
-    public void createOrder(@DestinationVariable("uniqueUserId") String uniqueUserId, @RequestBody Order rawOrder, HttpServletRequest request) throws InterruptedException {
+    public void createOrder(@DestinationVariable("uniqueUserId") String uniqueUserId, SimpMessageHeaderAccessor ha, @RequestBody Order rawOrder) throws InterruptedException {
         Order order = cleanOrder(rawOrder);
+        String captcha = order.getCaptcha();
+        String clientIp = ha.getSessionAttributes().get("ip").toString();
+
+        try {
+            captchaService.processResponse(captcha, clientIp);
+        } catch (ReCaptchaInvalidException e) {
+            webSocketService.sendMessage(uniqueUserId,
+                    new WebsocketMessage()
+                            .setPrefix("x")
+                            .setContentType("error")
+                            .setContent("Cant validate captcha " + e));
+            return;
+        }
+
 
         JiraIssue jiraIssue = jiraService.createTask(order); // todo move
         String jiraIssueKey = jiraIssue.getKey();
