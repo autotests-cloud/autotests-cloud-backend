@@ -39,19 +39,19 @@ public class OrderController {
     @MessageMapping("/orders/{uniqueUserId}")
     public void createOrder(@DestinationVariable("uniqueUserId") String uniqueUserId, SimpMessageHeaderAccessor ha, @RequestBody Order rawOrder) throws InterruptedException {
         Order order = cleanOrder(rawOrder);
-        String captcha = order.getCaptcha();
-        String clientIp = ha.getSessionAttributes().get("ip").toString();
-
-        try {
-            captchaService.processResponse(captcha, clientIp);
-        } catch (ReCaptchaInvalidException e) {
-            webSocketService.sendMessage(uniqueUserId,
-                    new WebsocketMessage()
-                            .setPrefix("x")
-                            .setContentType("error")
-                            .setContent("Cant validate captcha " + e));
-            return;
-        }
+//        String captcha = order.getCaptcha();
+//        String clientIp = ha.getSessionAttributes().get("ip").toString();
+//
+//        try {
+//            captchaService.processResponse(captcha, clientIp);
+//        } catch (ReCaptchaInvalidException e) {
+//            webSocketService.sendMessage(uniqueUserId,
+//                    new WebsocketMessage()
+//                            .setPrefix("x")
+//                            .setContentType("error")
+//                            .setContent("Cant validate captcha " + e));
+//            return;
+//        }
 
 
         JiraIssue jiraIssue = jiraService.createTask(order); // todo move
