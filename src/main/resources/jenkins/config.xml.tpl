@@ -19,7 +19,7 @@
     </jenkins.model.BuildDiscarderProperty>
      <hudson.model.StringParameterDefinition>
       <name>REPOSITORY</name>
-      <description>Fork & run your repository</description>
+      <description>Fork and run your repository</description>
       <defaultValue>%s</defaultValue>
       <trim>false</trim>
     </hudson.model.StringParameterDefinition>
@@ -223,7 +223,6 @@ fi&#xd;
       </tasks>
     </hudson.plugins.postbuildtask.PostbuildTask>
   </publishers>
-  <buildWrappers/>
     <buildWrappers>
       <hudson.plugins.timestamper.TimestamperBuildWrapper plugin="timestamper@1.12"/>
     </buildWrappers>

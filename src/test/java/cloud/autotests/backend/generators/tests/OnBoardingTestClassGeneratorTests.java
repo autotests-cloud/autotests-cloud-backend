@@ -1,4 +1,4 @@
-package cloud.autotests.backend.generators;
+package cloud.autotests.backend.generators.tests;
 
 import cloud.autotests.backend.models.Order;
 import org.junit.jupiter.api.BeforeAll;
