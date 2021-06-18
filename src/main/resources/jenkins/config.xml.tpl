@@ -19,6 +19,12 @@
     </jenkins.model.BuildDiscarderProperty>
     <hudson.model.ParametersDefinitionProperty>
       <parameterDefinitions>
+        <hudson.model.StringParameterDefinition>
+          <name>REPOSITORY</name>
+          <description>Fork repo and run your code</description>
+          <defaultValue>%s</defaultValue>
+          <trim>true</trim>
+        </hudson.model.StringParameterDefinition>
         <hudson.model.ChoiceParameterDefinition>
           <name>BROWSER</name>
           <description></description>
@@ -73,19 +79,19 @@
           <name>REMOTE_DRIVER_URL</name>
           <description></description>
           <defaultValue>selenoid.autotests.cloud</defaultValue>
-          <trim>false</trim>
+          <trim>true</trim>
         </hudson.model.StringParameterDefinition>
         <hudson.model.StringParameterDefinition>
           <name>THREADS</name>
           <description></description>
           <defaultValue>5</defaultValue>
-          <trim>false</trim>
+          <trim>true</trim>
         </hudson.model.StringParameterDefinition>
         <hudson.model.StringParameterDefinition>
           <name>ALLURE_NOTIFICATIONS_VERSION</name>
           <description>https://github.com/qa-guru/allure-notifications</description>
           <defaultValue>2.2.3</defaultValue>
-          <trim>false</trim>
+          <trim>true</trim>
         </hudson.model.StringParameterDefinition>
       </parameterDefinitions>
     </hudson.model.ParametersDefinitionProperty>
@@ -94,7 +100,7 @@
     <configVersion>2</configVersion>
     <userRemoteConfigs>
       <hudson.plugins.git.UserRemoteConfig>
-        <url>%s</url>
+        <url>${REPOSITORY}</url>
       </hudson.plugins.git.UserRemoteConfig>
     </userRemoteConfigs>
     <branches>
@@ -217,7 +223,7 @@ fi&#xd;
       </tasks>
     </hudson.plugins.postbuildtask.PostbuildTask>
   </publishers>
-    <buildWrappers>
-      <hudson.plugins.timestamper.TimestamperBuildWrapper plugin="timestamper@1.12"/>
-    </buildWrappers>
+  <buildWrappers>
+    <hudson.plugins.timestamper.TimestamperBuildWrapper plugin="timestamper@1.12"/>
+  </buildWrappers>
 </project>

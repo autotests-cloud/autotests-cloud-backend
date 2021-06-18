@@ -18,7 +18,7 @@ public class JenkinsConfigGenerator {
     public String getConfig(Order order, String githubRepositoryUrl, Integer telegramChatMessageId) {
         String launchName = order.getTitle().replace("_", "-"); // todo remove bug in notifications
 
-        return format(getConfigTemplate(), githubRepositoryUrl, "%s", "%s",
+        return format(getConfigTemplate(), githubRepositoryUrl,
                 telegramConfig.getToken(), telegramConfig.getChatId(), telegramChatMessageId,
                 launchName, "prod", launchName); // todo add site
     }
