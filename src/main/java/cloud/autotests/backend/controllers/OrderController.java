@@ -37,13 +37,12 @@ public class OrderController {
     TelegramService telegramService;
 
     @MessageMapping("/orders/{uniqueUserId}")
-    public void createOrder(@DestinationVariable("uniqueUserId") String uniqueUserId, SimpMessageHeaderAccessor ha, @RequestBody Order rawOrder) throws InterruptedException {
+    public void createOrder(@DestinationVariable("uniqueUserId") String uniqueUserId, @RequestBody Order rawOrder) throws InterruptedException {
         Order order = cleanOrder(rawOrder);
         String captcha = order.getCaptcha();
-        String clientIp = ha.getSessionAttributes().get("ip").toString();
 
         try {
-            captchaService.processResponse(captcha, clientIp);
+            captchaService.processResponse(captcha);
         } catch (ReCaptchaInvalidException e) {
             webSocketService.sendMessage(uniqueUserId,
                     new WebsocketMessage()

@@ -35,8 +35,6 @@ dependencies {
     implementation 'com.konghq:unirest-java:3.11.11'
     implementation 'org.jsoup:jsoup:1.13.1'
     implementation 'org.awaitility:awaitility:3.0.0'
-
-
     implementation('com.atlassian.jira:jira-rest-java-client-app:5.2.1') {
         exclude module: "slf4j-log4j12"
     }

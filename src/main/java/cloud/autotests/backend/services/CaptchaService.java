@@ -18,18 +18,20 @@ import static java.lang.String.format;
 public class CaptchaService {
     private static final Logger LOG = LoggerFactory.getLogger(CaptchaService.class);
 
-    private static Pattern RESPONSE_PATTERN = Pattern.compile("[A-Za-z0-9_-]+");
+    private static final Pattern RESPONSE_PATTERN = Pattern.compile("[A-Za-z0-9_-]+");
+
     @Autowired
     private CaptchaConfig captchaConfig;
 
-    public void processResponse(String captcha, String clientIp) {
+    public void processResponse(String captcha) {
         if (!responseSanityCheck(captcha)) {
             throw new ReCaptchaInvalidException("Response contains invalid characters");
         }
 
         String validationUrl = format(
-                "https://www.google.com/recaptcha/api/siteverify?secret=%s&response=%s&remoteip=%s",
-                captchaConfig.getSecret(), captcha, clientIp);
+                "https://www.google.com/recaptcha/api/siteverify?secret=%s&response=%s",
+                captchaConfig.getSecret(), captcha);
+        LOG.info("reCaptcha url request: {}", validationUrl);
 
         GoogleResponse googleResponse = Unirest.get(validationUrl).asObject(GoogleResponse.class).getBody();
         LOG.info("reCaptcha response: {}", googleResponse.toString());

@@ -134,28 +134,16 @@
       <useSystemProperties>false</useSystemProperties>
       <customHeaders class="empty-list"/>
     </jenkins.plugins.http__request.HttpRequest>
-    <com.etas.jenkins.plugins.CreateTextFile.CreateFileBuilder plugin="text-file-operations@1.3.2">
-      <textFilePath>src/test/resources/config/remote_driver.properties</textFilePath>
-      <textFileContent>web.browser=
-web.browser.version=
-web.browser.size=
-web.remote.driver.url=
-web.remote.driver.user=user1
-web.remote.driver.password=1234
-video.storage=</textFileContent>
-      <fileOption>overWrite</fileOption>
-      <useWorkspace>true</useWorkspace>
-    </com.etas.jenkins.plugins.CreateTextFile.CreateFileBuilder>
     <hudson.plugins.gradle.Gradle plugin="gradle@1.36">
       <switches></switches>
       <tasks>clean
 test
--Dweb.browser=${BROWSER}
--Dweb.browser.version=${BROWSER_VERSION}
--Dweb.browser.size=${BROWSER_SIZE}
--Dweb.browser.mobile.view=&quot;${BROWSER_MOBILE}&quot;
--Dweb.remote.driver.url=https://%s:%s@${REMOTE_DRIVER_URL}/wd/hub/
--Dvideo.storage=https://${REMOTE_DRIVER_URL}/video/
+-Dbrowser=${BROWSER}
+-DbrowserVersion=${BROWSER_VERSION}
+-DbrowserSize=${BROWSER_SIZE}
+-DbrowserMobileView=&quot;${BROWSER_MOBILE}&quot;
+-DremoteDriverUrl=https://user1:1234@${REMOTE_DRIVER_URL}/wd/hub/
+-DvideoStorage=https://${REMOTE_DRIVER_URL}/video/
 -Dthreads=${THREADS}</tasks>
       <rootBuildScriptDir></rootBuildScriptDir>
       <buildFile></buildFile>

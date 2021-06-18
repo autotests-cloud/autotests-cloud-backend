@@ -26,7 +26,7 @@ public class TestStepsGenerator {
     public static String generateCheckConsoleErrorStep() {
         String stepDescription = "Console logs should not contain text 'SEVERE'";
         String stepContent =
-                "String consoleLogs = getConsoleLogs();\r\n" +
+                "String consoleLogs = DriverUtils.getConsoleLogs();\r\n" +
                 "            String errorText = \"SEVERE\";\r\n" +
                 "\r\n" +
                 "            assertThat(consoleLogs).doesNotContain(errorText);";
