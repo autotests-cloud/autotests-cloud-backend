@@ -34,10 +34,4 @@ public class TestStepsGenerator {
         return generateTestStep(stepDescription, stepContent);
     }
 
-    /*
-            step("Page should not have errors (SEVERE) in console", () -> {
-            String consoleLogs = getConsoleLogs();
-            assertThat(consoleLogs).doesNotContain("SEVERE");
-        });
-     */
 }
