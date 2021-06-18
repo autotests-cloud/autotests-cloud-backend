@@ -20,7 +20,7 @@ public class OnBoardingTestClassGenerator {
 
     public static String generateOnBoardingTestClass(String testClassNamePrefix, Order order) { // todo add link to Jira issue
         StringBuilder testMethods = new StringBuilder();
-//        testMethods.append(generateFromStepsTestMethod(order));
+        testMethods.append(generateFromStepsTestMethod(order));
         testMethods.append(generateFromUrlTestMethods(order));
 
         return generateTestClass(testClassNamePrefix, testMethods.toString()); // todo add classDependencyGenerator
