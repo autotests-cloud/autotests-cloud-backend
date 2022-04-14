@@ -44,9 +44,8 @@
           <editableType>NoFilter</editableType>
           <choiceListProvider class="jp.ikedam.jenkins.plugins.extensible_choice_parameter.TextareaChoiceListProvider">
             <choiceList>
-              <string>91.0</string>
-              <string>90.0</string>
-              <string>89.0</string>
+              <string>100.0</string>
+              <string>99.0</string>
             </choiceList>
           </choiceListProvider>
         </jp.ikedam.jenkins.plugins.extensible__choice__parameter.ExtensibleChoiceParameterDefinition>
@@ -154,7 +153,7 @@ test
 -Dthreads=${THREADS}</tasks>
       <rootBuildScriptDir></rootBuildScriptDir>
       <buildFile></buildFile>
-      <gradleName>Gradle 6.8.3</gradleName>
+      <gradleName>Gradle 7.4.1</gradleName>
       <useWrapper>false</useWrapper>
       <makeExecutable>false</makeExecutable>
       <useWorkspaceAsHome>false</useWorkspaceAsHome>
