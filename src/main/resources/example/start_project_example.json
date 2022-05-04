@@ -1,0 +1,53 @@
+{
+  "uuid": "f9298b1c-cbd5-11ec-9d64-0242ac120002",
+  "url": "https://qa.guru",
+  "options": {
+    "manual_tests": [
+      {
+        "title": "Login test",
+        "steps": "step1\nstep2"
+      },
+      {
+        "title": "Registration test",
+        "steps": "step1\nstep2"
+      }
+    ],
+    "code": {
+      "type": "github",
+      "organization": "autotests-cloud",
+      "repository_name": "generated",
+      "generate_base_tests": true
+    },
+    "infrastructure": {
+      "type": "jenkins",
+      "create_job": true,
+      "launch_job": true
+    },
+    "reporting": {
+      "type": "allure",
+      "attachments": {
+        "screenshots": true,
+        "video": true,
+        "console_log": true,
+        "page_source": true
+      }
+    },
+    "notifications": {
+      "type": "telegram",
+      "chat": "build_in",
+      "bot": "build_in",
+      "enabled": true
+    },
+    "test_management_system": {
+      "type": "allure_testops",
+      "project_name": "generated",
+      "enabled": true
+    },
+    "issue_tracker": {
+      "type": "jira",
+      "project_name": "generated",
+      "enabled": true
+    }
+  }
+}
+
