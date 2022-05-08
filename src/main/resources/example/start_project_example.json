@@ -1,5 +1,6 @@
 {
   "uuid": "f9298b1c-cbd5-11ec-9d64-0242ac120002",
+  "captcha": "",
   "url": "https://qa.guru",
   "options": {
     "manual_tests": [

@@ -4,6 +4,7 @@ import cloud.autotests.backend.config.JenkinsConfig;
 import cloud.autotests.backend.generators.jenkins.JenkinsConfigGenerator;
 import cloud.autotests.backend.models.Order;
 import kong.unirest.HttpResponse;
+import kong.unirest.JsonNode;
 import kong.unirest.Unirest;
 import kong.unirest.json.JSONObject;
 import lombok.AllArgsConstructor;
@@ -62,9 +63,14 @@ public class JenkinsService {
 
     public boolean isJobFinished(String jiraIssueKey) {
         String jobStatusUrl = format(API_JOB_STATUS_URL_TEMPLATE, jenkinsConfig.getUrl(), jiraIssueKey);
-        JSONObject jobObject = Unirest.get(jobStatusUrl)
-                .asJson().getBody().getObject();
+
+        JsonNode jobBody = Unirest.get(jobStatusUrl)
+                .asJson().getBody();
+        LOG.info(jobBody.toString());
+
+        JSONObject jobObject = jobBody.getObject();
         LOG.info(jobObject.toString());
+
         return !jobObject.isNull("result") && !jobObject.getBoolean("building");
     }
 }
