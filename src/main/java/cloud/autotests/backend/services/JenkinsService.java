@@ -64,6 +64,7 @@ public class JenkinsService {
 
     public boolean isJobFinished(String jiraIssueKey) {
         String jobStatusUrl = format(API_JOB_STATUS_URL_TEMPLATE, jenkinsConfig.getUrl(), jiraIssueKey);
+        LOG.info(jobStatusUrl);
 
         GetRequest jobGet = Unirest.get(jobStatusUrl);
         LOG.info(jobGet.toString());
