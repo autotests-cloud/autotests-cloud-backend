@@ -57,7 +57,7 @@ public class JenkinsService {
 
 
     public void awaitJobFinished(String jiraIssueKey) {
-        Awaitility.await().atMost(60, SECONDS)
+        Awaitility.await().atMost(120, SECONDS)
                 .pollInterval(3, SECONDS)
                 .until(() -> isJobFinished(jiraIssueKey));
     }
