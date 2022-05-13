@@ -69,7 +69,10 @@ public class JenkinsService {
         GetRequest jobGet = Unirest.get(jobStatusUrl);
         LOG.info(jobGet.toString());
 
-        JsonNode jobBody = jobGet.asJson().getBody();
+        HttpResponse<JsonNode> jobBodyAsJson = jobGet.asJson();
+        LOG.info(jobBodyAsJson.toString());
+
+        JsonNode jobBody = jobBodyAsJson.getBody();
         LOG.info(jobBody.toString());
 
         JSONObject jobObject = jobBody.getObject();
