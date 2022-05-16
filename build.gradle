@@ -30,13 +30,13 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-mail'
     implementation 'org.springframework.boot:spring-boot-starter-security'
     implementation 'org.springframework.boot:spring-boot-starter-web'
+    implementation 'io.springfox:springfox-boot-starter:3.0.0'
+
     implementation 'com.fasterxml.jackson.core:jackson-databind'
     implementation 'commons-io:commons-io:2.8.0'
     implementation 'com.konghq:unirest-java:3.11.11'
     implementation 'org.jsoup:jsoup:1.13.1'
     implementation 'org.awaitility:awaitility:3.0.0'
-
-
     implementation('com.atlassian.jira:jira-rest-java-client-app:5.2.1') {
         exclude module: "slf4j-log4j12"
     }
