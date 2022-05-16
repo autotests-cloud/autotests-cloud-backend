@@ -8,11 +8,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.handler.annotation.DestinationVariable;
 import org.springframework.messaging.handler.annotation.MessageMapping;
-import org.springframework.messaging.simp.SimpMessageHeaderAccessor;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestBody;
-
-import javax.servlet.http.HttpServletRequest;
 
 import static cloud.autotests.backend.config.TelegramConfig.TELEGRAM_DISCUSSION_URL_TEMPLATE;
 import static cloud.autotests.backend.utils.CleanContentUtils.cleanOrder;
@@ -37,13 +34,12 @@ public class OrderController {
     TelegramService telegramService;
 
     @MessageMapping("/orders/{uniqueUserId}")
-    public void createOrder(@DestinationVariable("uniqueUserId") String uniqueUserId, SimpMessageHeaderAccessor ha, @RequestBody Order rawOrder) throws InterruptedException {
+    public void createOrder(@DestinationVariable("uniqueUserId") String uniqueUserId, @RequestBody Order rawOrder) throws InterruptedException {
         Order order = cleanOrder(rawOrder);
         String captcha = order.getCaptcha();
-        String clientIp = ha.getSessionAttributes().get("ip").toString();
 
         try {
-            captchaService.processResponse(captcha, clientIp);
+            captchaService.processResponse(captcha);
         } catch (ReCaptchaInvalidException e) {
             webSocketService.sendMessage(uniqueUserId,
                     new WebsocketMessage()

@@ -66,7 +66,7 @@ public class GithubService {
     }
 
     public GithubTestClass generateTests(Order order, String jiraIssueKey) {
-        final String testClassNamePrefix = "App";
+        final String testClassNamePrefix = "Generated";
         String generatedTestsContent = generateOnBoardingTestClass(testClassNamePrefix, order);
         String testClassContent64 = Base64.getEncoder().encodeToString(generatedTestsContent.getBytes());
 

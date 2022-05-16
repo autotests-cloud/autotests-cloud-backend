@@ -3,7 +3,9 @@ package cloud.autotests.backend.services;
 import cloud.autotests.backend.config.JenkinsConfig;
 import cloud.autotests.backend.generators.jenkins.JenkinsConfigGenerator;
 import cloud.autotests.backend.models.Order;
+import kong.unirest.GetRequest;
 import kong.unirest.HttpResponse;
+import kong.unirest.JsonNode;
 import kong.unirest.Unirest;
 import kong.unirest.json.JSONObject;
 import lombok.AllArgsConstructor;
@@ -55,16 +57,27 @@ public class JenkinsService {
 
 
     public void awaitJobFinished(String jiraIssueKey) {
-        Awaitility.await().atMost(60, SECONDS)
+        Awaitility.await().atMost(120, SECONDS)
                 .pollInterval(3, SECONDS)
                 .until(() -> isJobFinished(jiraIssueKey));
     }
 
     public boolean isJobFinished(String jiraIssueKey) {
         String jobStatusUrl = format(API_JOB_STATUS_URL_TEMPLATE, jenkinsConfig.getUrl(), jiraIssueKey);
-        JSONObject jobObject = Unirest.get(jobStatusUrl)
-                .asJson().getBody().getObject();
+        LOG.info(jobStatusUrl);
+
+        GetRequest jobGet = Unirest.get(jobStatusUrl);
+        LOG.info(jobGet.toString());
+
+        HttpResponse<JsonNode> jobBodyAsJson = jobGet.asJson();
+        LOG.info(jobBodyAsJson.toString());
+
+        JsonNode jobBody = jobBodyAsJson.getBody();
+        LOG.info(jobBody.toString());
+
+        JSONObject jobObject = jobBody.getObject();
         LOG.info(jobObject.toString());
+
         return !jobObject.isNull("result") && !jobObject.getBoolean("building");
     }
 }
