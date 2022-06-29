@@ -39,24 +39,28 @@ public class OrderController {
     private DebugConfig debugConfig;
 
     @MessageMapping("/orders/{uniqueUserId}")
-    public void createOrder(@DestinationVariable("uniqueUserId") String uniqueUserId, @RequestBody Order rawOrder) throws InterruptedException {
+//    public void createOrder(@DestinationVariable("uniqueUserId") String uniqueUserId, @RequestBody Order rawOrder) throws InterruptedException {
+    public void createOrder(@DestinationVariable("uniqueUserId") String uniqueUserId, @RequestBody String json) throws InterruptedException {
 
         if(debugConfig.getDebugMode()) {
+            LOG.info(json);
+
             webSocketService.sendMessage(uniqueUserId,
                     new WebsocketMessage()
                             .setPrefix("x")
                             .setContentType("error")
                             .setContent("First debug message"));
             sleep(3000);
+            
             webSocketService.sendMessage(uniqueUserId,
                     new WebsocketMessage()
                             .setPrefix("$")
                             .setContentType("generated")
-                            .setContent("second debug message"));
+                            .setContent(json));
 
             return;
         }
-
+        Order rawOrder = new Order(); // todo remove
         Order order = cleanOrder(rawOrder);
         String captcha = order.getCaptcha();
 
