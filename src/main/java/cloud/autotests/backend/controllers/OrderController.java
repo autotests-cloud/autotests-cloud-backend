@@ -1,5 +1,7 @@
 package cloud.autotests.backend.controllers;
 
+import cloud.autotests.backend.config.CaptchaConfig;
+import cloud.autotests.backend.config.DebugConfig;
 import cloud.autotests.backend.exceptions.ReCaptchaInvalidException;
 import cloud.autotests.backend.models.*;
 import cloud.autotests.backend.services.*;
@@ -33,8 +35,28 @@ public class OrderController {
     @Autowired
     TelegramService telegramService;
 
+    @Autowired
+    private DebugConfig debugConfig;
+
     @MessageMapping("/orders/{uniqueUserId}")
     public void createOrder(@DestinationVariable("uniqueUserId") String uniqueUserId, @RequestBody Order rawOrder) throws InterruptedException {
+
+        if(debugConfig.getDebugMode()) {
+            webSocketService.sendMessage(uniqueUserId,
+                    new WebsocketMessage()
+                            .setPrefix("x")
+                            .setContentType("error")
+                            .setContent("First debug message"));
+            sleep(3000);
+            webSocketService.sendMessage(uniqueUserId,
+                    new WebsocketMessage()
+                            .setPrefix("$")
+                            .setContentType("generated")
+                            .setContent("second debug message"));
+
+            return;
+        }
+
         Order order = cleanOrder(rawOrder);
         String captcha = order.getCaptcha();
 
