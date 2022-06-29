@@ -47,16 +47,20 @@ public class OrderController {
 
             webSocketService.sendMessage(uniqueUserId,
                     new WebsocketMessage()
-                            .setPrefix("x")
-                            .setContentType("error")
-                            .setContent("First debug message"));
+                            .setContentType("info")
+                            .setContent("requested body: " + json));
             sleep(3000);
-            
+
             webSocketService.sendMessage(uniqueUserId,
                     new WebsocketMessage()
-                            .setPrefix("$")
-                            .setContentType("generated")
-                            .setContent(json));
+                            .setContentType("git")
+                            .setContent("https://github.com/autotests-cloud/AUTO-1150"));
+            sleep(3000);
+
+            webSocketService.sendMessage(uniqueUserId,
+                    new WebsocketMessage()
+                            .setContentType("notification")
+                            .setContent("autotests_cloud_chat/3707"));
 
             return;
         }
