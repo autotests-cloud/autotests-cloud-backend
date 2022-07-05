@@ -59,9 +59,26 @@ public class OrderController {
 
             webSocketService.sendMessage(uniqueUserId,
                     new WebsocketMessage()
+                            .setContentType("jenkins")
+                            .setContent("https://jenkins.autotests.cloud/job/AUTO-1150"));
+            sleep(3000);
+
+            webSocketService.sendMessage(uniqueUserId,
+                    new WebsocketMessage()
+                            .setContentType("jekins_log")
+                            .setContent("https://jenkins.autotests.cloud/job/AUTO-1136/1/console"));
+            sleep(3000);
+
+            webSocketService.sendMessage(uniqueUserId,
+                    new WebsocketMessage()
                             .setContentType("notification")
                             .setContent("autotests_cloud_chat/3707"));
 
+            webSocketService.sendMessage(uniqueUserId,
+                    new WebsocketMessage()
+                            .setContentType("text")
+                            .setContent("any text here"));
+            sleep(3000);
             return;
         }
         Order rawOrder = new Order(); // todo remove
