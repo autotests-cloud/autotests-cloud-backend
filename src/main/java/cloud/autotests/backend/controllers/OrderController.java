@@ -66,7 +66,7 @@ public class OrderController {
             webSocketService.sendMessage(uniqueUserId,
                     new WebsocketMessage()
                             .setContentType("jekins_log")
-                            .setContent("https://jenkins.autotests.cloud/job/AUTO-1136/1/console"));
+                            .setContent("https://jenkins.autotests.cloud/job/AUTO-1150/2/logText/progressiveText?start=0"));
             sleep(3000);
 
             webSocketService.sendMessage(uniqueUserId,
