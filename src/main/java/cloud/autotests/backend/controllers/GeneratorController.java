@@ -1,6 +1,5 @@
 package cloud.autotests.backend.controllers;
 
-import cloud.autotests.backend.config.CaptchaConfig;
 import cloud.autotests.backend.config.DebugConfig;
 import cloud.autotests.backend.exceptions.ReCaptchaInvalidException;
 import cloud.autotests.backend.models.*;
@@ -19,8 +18,8 @@ import static java.lang.String.format;
 import static java.lang.Thread.sleep;
 
 @Controller
-public class OrderController {
-    private static final Logger LOG = LoggerFactory.getLogger(OrderController.class);
+public class GeneratorController {
+    private static final Logger LOG = LoggerFactory.getLogger(GeneratorController.class);
 
     @Autowired
     WebSocketService webSocketService;
@@ -38,49 +37,50 @@ public class OrderController {
     @Autowired
     private DebugConfig debugConfig;
 
-    @MessageMapping("/orders/{uniqueUserId}")
+    @MessageMapping("/generate/{uniqueUserId}")
 //    public void createOrder(@DestinationVariable("uniqueUserId") String uniqueUserId, @RequestBody Order rawOrder) throws InterruptedException {
-    public void createOrder(@DestinationVariable("uniqueUserId") String uniqueUserId, @RequestBody String json) throws InterruptedException {
+    public void createOrder(@DestinationVariable("uniqueUserId") String uniqueUserId, @RequestBody GeneratorModel generator) throws InterruptedException {
+//    public void createOrder(@DestinationVariable("uniqueUserId") String uniqueUserId, @RequestBody String json) throws InterruptedException {
 
-        if(debugConfig.getDebugMode()) {
-            LOG.info(json);
-
-            webSocketService.sendMessage(uniqueUserId,
-                    new WebsocketMessage()
-                            .setContentType("info")
-                            .setContent("requested body: " + json));
-            sleep(3000);
-
-            webSocketService.sendMessage(uniqueUserId,
-                    new WebsocketMessage()
-                            .setContentType("git")
-                            .setContent("https://github.com/autotests-cloud/AUTO-1150"));
-            sleep(3000);
-
-            webSocketService.sendMessage(uniqueUserId,
-                    new WebsocketMessage()
-                            .setContentType("jenkins")
-                            .setContent("https://jenkins.autotests.cloud/job/AUTO-1150"));
-            sleep(3000);
-
-            webSocketService.sendMessage(uniqueUserId,
-                    new WebsocketMessage()
-                            .setContentType("jekins_log")
-                            .setContent("https://jenkins.autotests.cloud/job/AUTO-1150/2/logText/progressiveText?start=0"));
-            sleep(3000);
-
-            webSocketService.sendMessage(uniqueUserId,
-                    new WebsocketMessage()
-                            .setContentType("notification")
-                            .setContent("autotests_cloud_chat/3707"));
-
-            webSocketService.sendMessage(uniqueUserId,
-                    new WebsocketMessage()
-                            .setContentType("text")
-                            .setContent("any text here"));
-            sleep(3000);
-            return;
-        }
+//        if(debugConfig.getDebugMode()) {
+//            LOG.info(json);
+//
+//            webSocketService.sendMessage(uniqueUserId,
+//                    new WebsocketMessage()
+//                            .setContentType("info")
+//                            .setContent("requested body: " + json));
+//            sleep(3000);
+//
+//            webSocketService.sendMessage(uniqueUserId,
+//                    new WebsocketMessage()
+//                            .setContentType("git")
+//                            .setContent("https://github.com/autotests-cloud/AUTO-1150"));
+//            sleep(3000);
+//
+//            webSocketService.sendMessage(uniqueUserId,
+//                    new WebsocketMessage()
+//                            .setContentType("jenkins")
+//                            .setContent("https://jenkins.autotests.cloud/job/AUTO-1150"));
+//            sleep(3000);
+//
+//            webSocketService.sendMessage(uniqueUserId,
+//                    new WebsocketMessage()
+//                            .setContentType("jekins_log")
+//                            .setContent("https://jenkins.autotests.cloud/job/AUTO-1150/2/logText/progressiveText?start=0"));
+//            sleep(3000);
+//
+//            webSocketService.sendMessage(uniqueUserId,
+//                    new WebsocketMessage()
+//                            .setContentType("notification")
+//                            .setContent("autotests_cloud_chat/3707"));
+//
+//            webSocketService.sendMessage(uniqueUserId,
+//                    new WebsocketMessage()
+//                            .setContentType("text")
+//                            .setContent("any text here"));
+//            sleep(3000);
+//            return;
+//        }
         Order rawOrder = new Order(); // todo remove
         Order order = cleanOrder(rawOrder);
         String captcha = order.getCaptcha();

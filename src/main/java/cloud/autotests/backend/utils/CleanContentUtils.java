@@ -1,8 +1,6 @@
 package cloud.autotests.backend.utils;
 
-import cloud.autotests.backend.controllers.OrderController;
 import cloud.autotests.backend.models.Order;
-import org.aspectj.weaver.ast.Or;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
