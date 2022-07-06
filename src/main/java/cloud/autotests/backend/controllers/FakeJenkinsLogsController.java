@@ -15,7 +15,7 @@ public class FakeJenkinsLogsController {
     @GetMapping("/{id}")
     public String getLogsById(@PathVariable String id) {
         String jenkinsLog = Unirest
-                .get(format("https://jenkins.autotests.cloud/job/%s/2/logText/progressiveText?start=0", id))
+                .get(format("https://jenkins.autotests.cloud/job/%s/1/logText/progressiveText?start=0", id))
                 .asString().getBody();
         return jenkinsLog;
     }
