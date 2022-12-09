@@ -1,22 +1,23 @@
 package cloud.autotests.backend.generators.jenkins;
 
 import cloud.autotests.backend.config.TelegramConfig;
-import cloud.autotests.backend.models.Order;
-import lombok.AllArgsConstructor;
+import cloud.autotests.backend.models.request.Opts;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+
+import javax.validation.constraints.NotNull;
 
 import static cloud.autotests.backend.utils.Utils.readStringFromFile;
 import static java.lang.String.format;
 
 @Service
-@AllArgsConstructor
+@RequiredArgsConstructor
 public class JenkinsConfigGenerator {
     private static final String CONFIG_TEMPLATE_PATH = "src/main/resources/jenkins/config.xml.tpl";
+    private final TelegramConfig telegramConfig;
 
-    TelegramConfig telegramConfig;
-
-    public String getConfig(Order order, String githubRepositoryUrl, Integer telegramChatMessageId) {
-        String launchName = order.getTitle().replace("_", "-"); // todo remove bug in notifications
+    public String getConfig(@NotNull Opts opts, String githubRepositoryUrl, Integer telegramChatMessageId, String title) {
+        String launchName = title.replace("_", "-"); // todo remove bug in notifications
 
         return format(getConfigTemplate(), githubRepositoryUrl,
                 telegramConfig.getToken(), telegramConfig.getChatId(), telegramChatMessageId,

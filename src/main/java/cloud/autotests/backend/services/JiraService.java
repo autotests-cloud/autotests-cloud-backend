@@ -1,8 +1,11 @@
 package cloud.autotests.backend.services;
 
 import cloud.autotests.backend.config.JiraConfig;
+import cloud.autotests.backend.exceptions.BadRequestException;
+import cloud.autotests.backend.exceptions.ServerException;
 import cloud.autotests.backend.models.JiraIssue;
-import cloud.autotests.backend.models.Order;
+import cloud.autotests.backend.models.request.Test;
+import cloud.autotests.backend.models.request.Opts;
 import com.atlassian.jira.rest.client.api.IssueRestClient;
 import com.atlassian.jira.rest.client.api.JiraRestClient;
 import com.atlassian.jira.rest.client.api.domain.BasicIssue;
@@ -12,8 +15,7 @@ import com.atlassian.jira.rest.client.api.domain.Issue;
 import com.atlassian.jira.rest.client.api.domain.input.IssueInput;
 import com.atlassian.jira.rest.client.api.domain.input.IssueInputBuilder;
 import lombok.AllArgsConstructor;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -25,51 +27,34 @@ import static java.lang.String.format;
 
 @Service
 @AllArgsConstructor
+@Slf4j
 public class JiraService {
-    private static final Logger LOG = LoggerFactory.getLogger(JiraService.class);
 
     private static final Long ISSUE_TYPE = 10002L;
     private final JiraRestClient jiraRestClient;
     private final JiraConfig jiraConfig;
 
-    public static void main(String[] args) {
-//
-//        JiraService myJiraClient = new JiraService();
-//
-//        final String issueKey = myJiraClient.createIssue("TESTS", 10002L, "Your first lesson 1");
-//        myJiraClient.updateIssueDescription(issueKey, "This is description from my Jira Client");
-//        Issue issue = myJiraClient.getIssue(issueKey);
-////        System.out.println(issue.getDescription());
-////
-////        myJiraClient.voteForAnIssue(issue);
-////
-////        System.out.println(myJiraClient.getTotalVotesCount(issueKey));
-////
-//        myJiraClient.addComment(issue, "This is comment from my Jira Client");
-//
-//        myJiraClient.assignIssue(issueKey, "svasenkov");
-////
-////        List<Comment> comments = myJiraClient.getAllComments(issueKey);
-////        comments.forEach(c -> System.out.println(c.getBody()));
-////
-////        myJiraClient.deleteIssue(issueKey, true);
-//
-//        myJiraClient.jiraRestClient.close();
-    }
+    public JiraIssue createTask(String title) {
 
-    public JiraIssue createTask(Order order) {
-        BasicIssue basicIssue = createIssue(jiraConfig.getProjectKey(), ISSUE_TYPE, order.getTitle());
+        JiraIssue jiraIssue = null;
+
+        BasicIssue basicIssue = createIssue(jiraConfig.getProjectKey(), ISSUE_TYPE, title);
         String issueKey = basicIssue.getKey();
 
         if (issueKey != null) {
             String jiraIssueUrl = format(JIRA_ISSUE_URL_TEMPLATE, jiraConfig.getUrl(), issueKey);
-            return new JiraIssue().setKey(issueKey).setUrl(jiraIssueUrl);
+            jiraIssue = new JiraIssue().setKey(issueKey).setUrl(jiraIssueUrl);
         }
 
-        return null;
+        if (jiraIssue == null) {
+            log.error("[ERROR] Generate jira issue with title {}", jiraIssue);
+            throw new BadRequestException("[ERROR] Generate jira issue with title {}" + jiraIssue);
+        }
+
+        return jiraIssue;
     }
 
-    public Boolean updateTask(Order order, String issueKey, String githubTestsUrl, Integer telegramChannelPostId) {
+    public void updateTask(Opts opts, String issueKey, String githubTestsUrl, Integer telegramChannelPostId) {
         String jenkinsJobUrl = "https://jenkins.autotests.cloud/job/" + issueKey;
         String telegramChannelUrl = "https://t.me/autotests_cloud/" + telegramChannelPostId;
         String content = format(
@@ -80,9 +65,14 @@ public class JiraService {
                         "*Telegram discussion*: %s\n\n" +
                         "*Test steps*: \n" +
                         "{code}%s{code}",
-                order.getPrice(), order.getEmail(), githubTestsUrl, jenkinsJobUrl, telegramChannelUrl, order.getSteps());
+                opts.getPrice(),
+                opts.getEmail(),
+                githubTestsUrl,
+                jenkinsJobUrl,
+                telegramChannelUrl,
+                opts.getTests().getTest().stream().map(Test::getStep).collect(Collectors.joining("/")));
 
-        return updateIssueDescription(issueKey, content);
+        updateIssueDescription(issueKey, content);
     }
 
     private BasicIssue createIssue(String projectKey, Long issueType, String issueSummary) {
@@ -120,15 +110,14 @@ public class JiraService {
                 .collect(Collectors.toList());
     }
 
-    private Boolean updateIssueDescription(String issueKey, String newDescription) {
+    private void updateIssueDescription(String issueKey, String newDescription) {
         IssueInput input = new IssueInputBuilder().setDescription(newDescription).build();
         try {
             jiraRestClient.getIssueClient().updateIssue(issueKey, input).claim();
-            return true; // todo maybe bad practice
         } catch (Exception e) {
-            e.printStackTrace();
+            log.error("error update issue " + issueKey, e);
+            throw new ServerException("Error update issue " + issueKey);
         }
-        return false;
     }
 
     private void deleteIssue(String issueKey, boolean deleteSubtasks) {

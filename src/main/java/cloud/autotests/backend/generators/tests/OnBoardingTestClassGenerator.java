@@ -1,10 +1,10 @@
 package cloud.autotests.backend.generators.tests;
 
-import cloud.autotests.backend.models.Order;
+import cloud.autotests.backend.models.request.Test;
+import cloud.autotests.backend.models.request.Tests;
+import lombok.extern.slf4j.Slf4j;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.List;
 
@@ -14,36 +14,53 @@ import static cloud.autotests.backend.utils.HtmlUtils.getHtmlFromUrl;
 import static cloud.autotests.backend.utils.HtmlUtils.getTitleValue;
 import static cloud.autotests.backend.utils.RegexpUtils.getUrlsFromOrder;
 
+@Slf4j
 public class OnBoardingTestClassGenerator {
-    private static final Logger LOG = LoggerFactory.getLogger(OnBoardingTestClassGenerator.class);
 
+    public static String generateOnBoardingTestClass(Tests tests, String testClassNamePrefix, String title) { // todo add link to Jira issue
+        log.info("[START] Generate on boarding test class {}", title);
 
-    public static String generateOnBoardingTestClass(String testClassNamePrefix, Order order) { // todo add link to Jira issue
         StringBuilder testMethods = new StringBuilder();
-        testMethods.append(generateFromStepsTestMethod(order));
-        testMethods.append(generateFromUrlTestMethods(order));
 
-        return generateTestClass(testClassNamePrefix, testMethods.toString()); // todo add classDependencyGenerator
-    }
-
-    public static String generateFromStepsTestMethod(Order order) { // todo add link to Jira issue
-        String testMethodDescription = "Soon to be implemented by you (or QA.GURU engineers)";
-        String testMethodNamePrefix = "generated";
-        String stepContent = "step(\"// todo: just add selenium action\");";
-
-        StringBuilder testSteps = new StringBuilder();
-        String[] steps = order.getSteps().split("\n");
-        for (String stepDescription : steps) {
-            testSteps.append(
-                    generateTestStep(stepDescription, stepContent));
+        testMethods.append(generateFromStepsTestMethod(tests, title));
+        if(tests.isTitleCheck() || tests.isConsoleCheck()) {
+            testMethods.append(generateFromUrlTestMethods(tests));
         }
 
-        return generateTestMethod(testMethodDescription, order.getTitle(),
-                testMethodNamePrefix, testSteps.toString());
+        String result = generateTestClass(testClassNamePrefix, testMethods.toString()); // todo add classDependencyGenerator
+
+        log.info("[FINISH] Generate on boarding test class {}", result);
+
+        return result;
     }
 
-    public static String generateFromUrlTestMethods(Order order) {
-        List<String> urls = getUrlsFromOrder(order.getSteps());
+    public static String generateFromStepsTestMethod(Tests tests, String title) { // todo add link to Jira issue
+        log.info("[START] Generate from steps test method {}", title);
+
+        String testMethodDescription = "Soon to be implemented by you (or QA.GURU engineers)";
+        String testMethodNamePrefix = "generated";
+
+        StringBuilder testSteps = new StringBuilder();
+        List<Test> steps = tests.getTest();
+        for (Test step : steps) {
+            testSteps.append(
+                    generateTestStep(step.getTitle(), step.getStep()));
+        }
+
+        String result = generateTestMethod(testMethodDescription, title,
+                testMethodNamePrefix, testSteps.toString());
+
+        log.info("[FINISH] Generate from steps test method {}", result);
+
+        return result;
+    }
+
+    //todo Check page title url  1 row
+    public static String generateFromUrlTestMethods(Tests tests) {
+        log.info("[START] Generate from url test methods");
+
+        List<String> urls = getUrlsFromOrder(tests.getTest());
+
         if (urls.size() == 0)
             return "";
 
@@ -55,14 +72,22 @@ public class OnBoardingTestClassGenerator {
         Document htmlDom = Jsoup.parse(htmlBody);
 
         StringBuilder testMethods = new StringBuilder();
-        testMethods.append(generateTitleTestMethod(htmlDom, url));
-        testMethods.append(generateConsoleErrorTestMethod(url));
-//        testMethods.append(generateHeaderTestMethods(order, htmlDom));
 
+        if(tests.isTitleCheck()) {
+            testMethods.append(generateTitleTestMethod(htmlDom, url));
+        }
+
+        if(tests.isConsoleCheck()) {
+            testMethods.append(generateConsoleErrorTestMethod(url));
+        }
+
+        log.info("[FINISH] Generate from url test methods");
         return testMethods.toString();
     }
 
     public static String generateTitleTestMethod(Document htmlDom, String url) {
+        log.info("[START] Generate title test methods");
+
         String titleValue = getTitleValue(htmlDom);
         if (titleValue.isEmpty())
             return "";
@@ -75,11 +100,17 @@ public class OnBoardingTestClassGenerator {
         testSteps.append(generateOpenPageStep(url));
         testSteps.append(generateCheckTitleStep(titleValue));
 
-        return generateTestMethod(testMethodDescription, testMethodDisplayName,
+        String result = generateTestMethod(testMethodDescription, testMethodDisplayName,
                 testMethodNamePrefix, testSteps.toString());
+
+        log.info("[FINISH] Generate title test methods {}", result);
+
+        return result;
     }
 
     public static String generateConsoleErrorTestMethod(String url) {
+        log.info("[START] Generate console error test methods");
+
         String testMethodDescription = "Autogenerated test";
         String testMethodDisplayName = "Page console log should not have errors";
         String testMethodNamePrefix = "consoleShouldNotHaveErrors";
@@ -88,13 +119,11 @@ public class OnBoardingTestClassGenerator {
         testSteps.append(generateOpenPageStep(url));
         testSteps.append(generateCheckConsoleErrorStep());
 
-        return generateTestMethod(testMethodDescription, testMethodDisplayName,
+        String result = generateTestMethod(testMethodDescription, testMethodDisplayName,
                 testMethodNamePrefix, testSteps.toString());
+
+        log.info("[FINISH] Generate console error methods {}", result);
+
+        return result;
     }
-
-    public static String generateHeaderTestMethods(Order order, Document htmlDom) {
-
-        return "";
-    }
-
 }

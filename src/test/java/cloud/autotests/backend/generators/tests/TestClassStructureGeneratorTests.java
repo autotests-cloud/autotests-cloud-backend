@@ -1,17 +1,13 @@
 package cloud.autotests.backend.generators.tests;
 
-import cloud.autotests.backend.models.Order;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import static cloud.autotests.backend.generators.tests.TestClassStructureGenerator.*;
-import static cloud.autotests.backend.utils.CleanContentUtils.cleanOrder;
 import static cloud.autotests.backend.utils.Utils.readStringFromFile;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class TestClassStructureGeneratorTests {
 
-    static Order order;
     private static final String TEST_CLASS_EXAMPLE_PATH = "src/test/resources/github/test_class.tpl";
     private static final String TEST_CLASS_TWO_TESTS_EXAMPLE_PATH = "src/test/resources/github/test_class_two_tests.tpl";
     private static final String TEST_METHOD_EXAMPLE_PATH = "src/test/resources/github/test_method.tpl";
@@ -28,17 +24,6 @@ public class TestClassStructureGeneratorTests {
     private static final String title = "Some test title";
     private static final String steps = "make tests\nmake more\nnot war";
     private static final String captcha = "no";
-
-    @BeforeAll
-    static void initContent() {
-        Order rawOrder = new Order();
-        rawOrder.setPrice(price);
-        rawOrder.setEmail(email);
-        rawOrder.setTitle(title);
-        rawOrder.setSteps(steps);
-        rawOrder.setCaptcha(captcha);
-        order = cleanOrder(rawOrder);
-    }
 
     @Test
     void generateTestClassTest() {
@@ -112,5 +97,4 @@ public class TestClassStructureGeneratorTests {
 
         assertEquals(expectedTestStep, generatedTestStep);
     }
-
 }

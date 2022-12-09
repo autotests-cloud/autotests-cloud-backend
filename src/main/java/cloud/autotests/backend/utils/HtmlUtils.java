@@ -2,25 +2,24 @@ package cloud.autotests.backend.utils;
 
 import kong.unirest.Unirest;
 import kong.unirest.UnirestException;
+import lombok.extern.slf4j.Slf4j;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+@Slf4j
 public class HtmlUtils {
-    private static final Logger LOG = LoggerFactory.getLogger(HtmlUtils.class);
 
     public static String getHtmlFromUrl(String url) {
         try {
             return String.valueOf(Unirest.get(url).asString().getBody());
         } catch (UnirestException e) {
-            LOG.error("[URL NOT VALID] {}\n {}", url, e.getMessage());
+            log.error("[URL NOT VALID] {}\n {}", url, e.getMessage());
         }
         return "";
     }

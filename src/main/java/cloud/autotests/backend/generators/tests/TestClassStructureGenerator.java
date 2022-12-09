@@ -1,8 +1,11 @@
 package cloud.autotests.backend.generators.tests;
 
+import lombok.extern.slf4j.Slf4j;
+
 import static cloud.autotests.backend.utils.Utils.readStringFromFile;
 import static java.lang.String.format;
 
+@Slf4j
 public class TestClassStructureGenerator {
     private static final String TEST_CLASS_TEMPLATE_PATH = "src/main/resources/github/test_class.tpl";
     private static final String TEST_METHOD_TEMPLATE_PATH = "src/main/resources/github/test_method.tpl";
@@ -11,6 +14,7 @@ public class TestClassStructureGenerator {
 
 
     public static String generateTestClass(String testClassPrefix, String testClassContent) {
+        log.info("Generate step {}", testClassPrefix);
         return format(readStringFromFile(TEST_CLASS_TEMPLATE_PATH),
                 testClassPrefix, testClassContent);
     }
@@ -23,6 +27,7 @@ public class TestClassStructureGenerator {
     }
 
     public static String generateTestStep(String stepDescription, String stepContent) {
+        log.info("Generate step {}", stepDescription);
         return format(readStringFromFile(TEST_STEP_TEMPLATE_PATH),
                 stepDescription, stepContent);
     }

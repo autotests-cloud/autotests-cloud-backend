@@ -1,23 +1,20 @@
 package cloud.autotests.backend.exceptions;
 
+import java.io.Serial;
+
 public final class ReCaptchaInvalidException extends RuntimeException {
 
+    @Serial
     private static final long serialVersionUID = 5861310537366287163L;
 
-    public ReCaptchaInvalidException() {
-        super();
+    private final String error;
+
+    public ReCaptchaInvalidException(String error) {
+        this.error = error;
     }
 
-    public ReCaptchaInvalidException(final String message, final Throwable cause) {
-        super(message, cause);
+    @Override
+    public String getMessage() {
+        return "Cant validate captcha: " + error;
     }
-
-    public ReCaptchaInvalidException(final String message) {
-        super(message);
-    }
-
-    public ReCaptchaInvalidException(final Throwable cause) {
-        super(cause);
-    }
-
 }

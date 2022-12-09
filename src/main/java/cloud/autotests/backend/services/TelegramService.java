@@ -2,17 +2,18 @@ package cloud.autotests.backend.services;
 
 import cloud.autotests.backend.config.JenkinsConfig;
 import cloud.autotests.backend.config.TelegramConfig;
+import cloud.autotests.backend.exceptions.ServerException;
 import cloud.autotests.backend.models.JiraIssue;
-import cloud.autotests.backend.models.Order;
 import cloud.autotests.backend.models.TelegramMessage;
+import cloud.autotests.backend.models.request.Opts;
 import kong.unirest.Unirest;
 import kong.unirest.json.JSONArray;
 import kong.unirest.json.JSONObject;
-import lombok.AllArgsConstructor;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import javax.validation.constraints.NotNull;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.IntStream;
@@ -26,15 +27,24 @@ import static java.util.stream.Collectors.toList;
 import static org.awaitility.Awaitility.await;
 
 @Service
-@AllArgsConstructor
+@RequiredArgsConstructor
+@Slf4j
 public class TelegramService {
-    private static final Logger LOG = LoggerFactory.getLogger(TelegramService.class);
 
     private final TelegramConfig telegramConfig;
     private final JenkinsConfig jenkinsConfig;
 
+    public TelegramMessage createChannelPostAndAwaitChatMessageObject(@NotNull Opts opts, JiraIssue jiraIssue, String githubTestUrl){
+        TelegramMessage.Info postInfo = createChannelPost(opts, jiraIssue, githubTestUrl);
+        TelegramMessage.Info chatInfo = awaitChatMessageObject(postInfo.getId());
 
-    public TelegramMessage createChannelPost(Order order, JiraIssue jiraIssue, String githubTestUrl) {
+        return TelegramMessage.builder()
+                .chat(chatInfo)
+                .post(postInfo)
+                .build();
+    }
+
+    public TelegramMessage.Info createChannelPost(@NotNull Opts opts, JiraIssue jiraIssue, String githubTestUrl) {
         String jiraIssueKey = jiraIssue.getKey();
         String jenkinsJobUrl = format(JOB_URL_TEMPLATE, jenkinsConfig.getUrl(), jiraIssueKey);
 
@@ -45,15 +55,17 @@ public class TelegramService {
                         "<u><b>Jenkins job</b></u>: <a href=\"%s\">%s</a>\n" +
                         "<u><b>Github code</b></u>:\n" +
                         "%s",
-                order.getTitle(), order.getPrice(), jiraIssue.getUrl(), jiraIssueKey,
+                opts.getUrl(), opts.getPrice(), jiraIssue.getUrl(), jiraIssueKey,
                 jenkinsJobUrl, jiraIssueKey, githubTestUrl); // todo email
 
         String body = format("chat_id=%s&text=%s&parse_mode=html", telegramConfig.getChannelId(), message);
 
         JSONObject sendObject = sendText(body);
-        return new TelegramMessage()
-                .setId(sendObject.getInt("message_id"))
-                .setName(sendObject.getJSONObject("chat").getString("username"));
+
+        return TelegramMessage.Info.builder()
+                .id(sendObject.getInt("message_id"))
+                .name(sendObject.getJSONObject("chat").getString("username"))
+                .build();
     }
 
     public JSONObject addOnBoardingMessage(Integer chatMessageId) {
@@ -70,12 +82,12 @@ public class TelegramService {
                 .body(body)
                 .asJson()
                 .ifFailure(response -> {
-                    LOG.error("Oh No! Status" + response.getStatus());
-                    LOG.error(response.getStatusText());
-                    LOG.error(response.getBody().toPrettyString());
+                    log.error("Oh No! Status" + response.getStatus());
+                    log.error(response.getStatusText());
+                    log.error(response.getBody().toPrettyString());
                     response.getParsingError().ifPresent(e -> {
-                        LOG.error("Parsing Exception: ", e);
-                        LOG.error("Original body: " + e.getOriginalBody());
+                        log.error("Parsing Exception: ", e);
+                        log.error("Original body: " + e.getOriginalBody());
                     });
                 })
                 .getBody()
@@ -87,20 +99,20 @@ public class TelegramService {
         return null;
     }
 
-    public TelegramMessage awaitChatMessageObject(Integer channelPostId) {
-        TelegramMessage[] messages = new TelegramMessage[1];
+    public TelegramMessage.Info awaitChatMessageObject(Integer channelPostId) {
+        TelegramMessage.Info[] messages = new TelegramMessage.Info[1];
         await()
                 .atMost(60, SECONDS)
                 .pollInterval(5, SECONDS)
                 .until(() -> {
-                    TelegramMessage msg = getChatMessageObject(channelPostId);
+                    TelegramMessage.Info msg = getChatMessageObject(channelPostId);
                     messages[0] = msg;
                     return msg != null;
                 });
         return messages[0];
     }
 
-    public TelegramMessage getChatMessageObject(Integer channelPostId) {
+    public TelegramMessage.Info getChatMessageObject(Integer channelPostId) {
         JSONArray getUpdatesList = getUpdates();
 
         List<JSONObject> objects = IntStream.range(0, getUpdatesList.length())
@@ -113,31 +125,13 @@ public class TelegramService {
                 .findFirst();
 
         if (message.isPresent()) {
-            int chatMessageId = message.get().getJSONObject("message").getInt("message_id");
-
-            JSONObject chatObject = message.get().getJSONObject("message").getJSONObject("chat");
-            String chatName = chatObject.getString("username");
-            return new TelegramMessage().setId(chatMessageId).setName(chatName);
+         return TelegramMessage.Info.builder()
+                 .id(message.get().getJSONObject("message").getInt("message_id"))
+                 .name(message.get().getJSONObject("message").getJSONObject("chat").getString("username"))
+                 .build();
+         }else{
+            throw new ServerException("Chat message not exit");
         }
-//
-//        for (Object obj : getUpdatesList) {
-//            JSONObject postObject = (JSONObject) obj;
-//
-//            if (postObject.has("message")) {
-//                JSONObject messageObject = postObject.getJSONObject("message");
-//                if (messageObject.has("forward_from_message_id")) {
-//                    if (messageObject.getInt("forward_from_message_id") == channelPostId) {
-//                        int chatMessageId = messageObject.getInt("message_id");
-//
-//                        JSONObject chatObject = messageObject.getJSONObject("chat");
-//                        String chatName = chatObject.getString("username");
-//
-//                        return new TelegramMessage().setMessageId(chatMessageId).setName(chatName);
-//                    }
-//                }
-//            }
-//        }
-        return null;
     }
 
     public JSONArray getUpdates() {

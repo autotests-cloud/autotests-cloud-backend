@@ -1,13 +1,14 @@
 package cloud.autotests.backend.services;
 
 import cloud.autotests.backend.config.GithubConfig;
+import cloud.autotests.backend.exceptions.CreateObjectException;
+import cloud.autotests.backend.exceptions.ServerException;
 import cloud.autotests.backend.models.GithubTestClass;
-import cloud.autotests.backend.models.Order;
+import cloud.autotests.backend.models.request.Tests;
 import kong.unirest.Unirest;
 import kong.unirest.json.JSONObject;
-import lombok.AllArgsConstructor;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.util.Base64;
@@ -17,19 +18,35 @@ import static cloud.autotests.backend.generators.tests.OnBoardingTestClassGenera
 import static java.lang.String.format;
 
 @Service
-@AllArgsConstructor
+@RequiredArgsConstructor
+@Slf4j
 public class GithubService {
-    private static final Logger LOG = LoggerFactory.getLogger(GithubService.class);
-
+    private final String CLASS_NAME_PREFIX = "Generated";
     private final GithubConfig githubConfig;
 
     public String createRepositoryFromTemplate(String jiraIssueKey) {
+
+        JSONObject createRepositoryResponse =  createRepository(jiraIssueKey);
+
+        String githubRepositoryUrl = null;
+        if (createRepositoryResponse.has("html_url"))
+            githubRepositoryUrl =  createRepositoryResponse.getString("html_url");
+
+        if (githubRepositoryUrl == null) {
+            log.error("[ERROR] Generate github repositorye title {}" + jiraIssueKey);
+            throw new CreateObjectException("github repository");
+        }
+
+        return githubRepositoryUrl;
+    }
+
+    private JSONObject createRepository(String jiraIssueKey) {
         String bodyTemplate = "{\"owner\": \"%s\", \"name\": \"%s\"}";
         String body = format(bodyTemplate, githubConfig.getGithubGeneratedOwner(), jiraIssueKey);
         String githubTemplateRepositoryApiUrl = format(API_TEMPLATE_REPOSITORY_URL,
                 githubConfig.getGithubTemplateOwner(), githubConfig.getGithubTemplateRepository());
 
-        JSONObject createRepositoryResponse = Unirest
+        return Unirest
                 .post(githubTemplateRepositoryApiUrl)
                 .header("Accept", "application/vnd.github.baptiste-preview+json")
                 .header("Content-Type", "application/json; charset=utf-8")
@@ -37,44 +54,28 @@ public class GithubService {
                 .body(body)
                 .asJson()
                 .ifFailure(response -> {
-                    LOG.error("Oh No! Status" + response.getStatus());
-                    LOG.error(response.getStatusText());
-                    LOG.error(response.getBody().toPrettyString());
+                    log.error("Oh No! Status" + response.getStatus());
+                    log.error(response.getStatusText());
+                    log.error(response.getBody().toPrettyString());
                     response.getParsingError().ifPresent(e -> {
-                        LOG.error("Parsing Exception: ", e);
-                        LOG.error("Original body: " + e.getOriginalBody());
+                        log.error("Parsing Exception: ", e);
+                        log.error("Original body: " + e.getOriginalBody());
                     });
                 })
                 .getBody()
                 .getObject();
-
-        if (createRepositoryResponse.has("html_url"))
-            return createRepositoryResponse.getString("html_url");
-
-        return null;
-
-        // todo add exception for existing repo
-        /*
-        {
-          "message": "Unprocessable Entity",
-          "errors": [
-            "Could not clone: Name already exists on this account"
-          ],
-          "documentation_url": "https://docs.github.com/rest/reference/repos#create-a-repository-using-a-template"
-        }
-         */
     }
 
-    public GithubTestClass generateTests(Order order, String jiraIssueKey) {
-        final String testClassNamePrefix = "Generated";
-        String generatedTestsContent = generateOnBoardingTestClass(testClassNamePrefix, order);
+    public GithubTestClass generateTests(Tests tests, String jiraIssueKey, String title) {
+
+        String generatedTestsContent = generateOnBoardingTestClass(tests, CLASS_NAME_PREFIX, title);
         String testClassContent64 = Base64.getEncoder().encodeToString(generatedTestsContent.getBytes());
 
         String testClassPath = format(API_NEW_TEST_CLASS_PATH,
-                githubConfig.getGithubGeneratedOwner(), jiraIssueKey, testClassNamePrefix);
+                githubConfig.getGithubGeneratedOwner(), jiraIssueKey, CLASS_NAME_PREFIX);
 
         String bodyTemplate = "{\"message\": \"Added test '%s'\", \"content\": \"%s\"}";
-        String body = format(bodyTemplate, order.getTitle(), testClassContent64);
+        String body = format(bodyTemplate, title, testClassContent64);
 
         JSONObject createTestsResponse = Unirest
                 .put(testClassPath)
@@ -84,32 +85,34 @@ public class GithubService {
                 .body(body)
                 .asJson()
                 .ifFailure(response -> {
-                    LOG.error("[createTestsResponse] Oh No! Status" + response.getStatus());
-                    LOG.error(response.getStatusText());
-                    LOG.error(response.getBody().toPrettyString());
+                    log.error("[createTestsResponse] Oh No! Status" + response.getStatus());
+                    log.error(response.getStatusText());
+                    log.error(response.getBody().toPrettyString());
                     response.getParsingError().ifPresent(e -> {
-                        LOG.error("Parsing Exception: ", e);
-                        LOG.error("Original body: " + e.getOriginalBody());
+                        log.error("Parsing Exception: ", e);
+                        log.error("Original body: " + e.getOriginalBody());
                     });
                 })
                 .getBody()
                 .getObject();
 
-        if (createTestsResponse.has("message"))
-            if (createTestsResponse.getString("message").contains("Invalid request.\\n\\n\\\"sha\\\" wasn't supplied."))
-                return null; // todo add normal exception
+        if (createTestsResponse.has("message") &&
+                createTestsResponse.getString("message").contains("Invalid request.\\n\\n\\\"sha\\\" wasn't supplied.")) {
+            throw new CreateObjectException( createTestsResponse.getString("message"));
+        }
 
+        GithubTestClass githubTestClass = null;
         if (createTestsResponse.has("content")) {
             JSONObject contentJson = createTestsResponse.getJSONObject("content");
             if (contentJson.has("html_url")) {
-                return new GithubTestClass()
+                githubTestClass = new GithubTestClass()
                         .setUrl(contentJson.getString("html_url"))
-                        .setUrlText(format(NEW_TEST_CLASS_SHORTENED_URL, testClassNamePrefix));
+                        .setUrlText(format(NEW_TEST_CLASS_SHORTENED_URL, CLASS_NAME_PREFIX));
             } else {
-                return null; // todo add exception
+                throw new ServerException("Test class generate error");
             }
         }
-        return null;
-    }
 
+        return githubTestClass;
+    }
 }
