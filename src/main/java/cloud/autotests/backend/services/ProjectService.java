@@ -1,6 +1,6 @@
 package cloud.autotests.backend.services;
 
-import cloud.autotests.backend.exceptions.BadRequestException;
+import cloud.autotests.backend.exceptions.ServerException;
 import cloud.autotests.backend.models.GithubTestClass;
 import cloud.autotests.backend.models.JiraIssue;
 import cloud.autotests.backend.models.TelegramMessage;
@@ -11,10 +11,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
-import java.net.URI;
-import java.net.URISyntaxException;
-
 import static cloud.autotests.backend.config.TelegramConfig.TELEGRAM_DISCUSSION_URL_TEMPLATE;
+import static cloud.autotests.backend.utils.Utils.getAuthority;
 
 @Service
 @RequiredArgsConstructor
@@ -49,8 +47,10 @@ public class ProjectService {
         TelegramMessage telegramMessage = telegramService.createChannelPostAndAwaitChatMessageObject(request.getOpts(), jiraIssue, githubTests.getUrl());
         log.info("[FINISH] Generate channel post");
 
+        log.info("[START] Generate jenkins job");
         String jenkinsJobUrl = jenkinsService.createJob(request.getOpts(), jiraIssue.getKey(),
                 githubRepositoryUrl, telegramMessage.getChat().getId(), title);
+        log.info("[FINISH] Generate jenkins job");
 
         log.info("[START] launch job");
         jenkinsService.launchJob(jiraIssue.getKey());
@@ -58,7 +58,9 @@ public class ProjectService {
         log.info("[FINISH] launch job");
 
         log.info("[START] update тask {}", jiraIssue.getKey());
-        jiraService.updateTask(request.getOpts(), jiraIssue.getKey(), githubTests.getUrl(), telegramMessage.getPost().getId());
+        if( !jiraService.updateTask(request.getOpts(), jiraIssue.getKey(), githubTests.getUrl(), telegramMessage.getPost().getId())){
+            throw new ServerException("Error update issue " + jiraIssue.getKey());
+        }
         log.info("[FINISH] update тask {}", jiraIssue.getKey());
 
         String telegramDiscussionUrl = String.format(TELEGRAM_DISCUSSION_URL_TEMPLATE,
@@ -71,21 +73,5 @@ public class ProjectService {
                         .jenkinsJobUrl(jenkinsJobUrl)
                         .jiraIssue(jiraIssue)
                 .build());
-    }
-
-    public String getAuthority(String url) {
-
-        log.info("getAuthority with {}", url);
-        URI uri;
-        try {
-            uri = new URI(url);
-        } catch (URISyntaxException e) {
-            log.error("getAuthority " + url, e);
-            throw new BadRequestException(e.getMessage());
-        }
-        String authority = uri.getAuthority();
-        log.info("getAuthority result {}", authority);
-
-        return authority;
     }
 }

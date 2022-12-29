@@ -54,7 +54,7 @@ public class JiraService {
         return jiraIssue;
     }
 
-    public void updateTask(Opts opts, String issueKey, String githubTestsUrl, Integer telegramChannelPostId) {
+    public boolean updateTask(Opts opts, String issueKey, String githubTestsUrl, Integer telegramChannelPostId) {
         String jenkinsJobUrl = "https://jenkins.autotests.cloud/job/" + issueKey;
         String telegramChannelUrl = "https://t.me/autotests_cloud/" + telegramChannelPostId;
         String content = format(
@@ -72,7 +72,7 @@ public class JiraService {
                 telegramChannelUrl,
                 opts.getTests().getTest().stream().map(Test::getStep).collect(Collectors.joining("/")));
 
-        updateIssueDescription(issueKey, content);
+        return updateIssueDescription(issueKey, content);
     }
 
     private BasicIssue createIssue(String projectKey, Long issueType, String issueSummary) {
@@ -110,14 +110,16 @@ public class JiraService {
                 .collect(Collectors.toList());
     }
 
-    private void updateIssueDescription(String issueKey, String newDescription) {
+    private boolean updateIssueDescription(String issueKey, String newDescription) {
         IssueInput input = new IssueInputBuilder().setDescription(newDescription).build();
         try {
             jiraRestClient.getIssueClient().updateIssue(issueKey, input).claim();
         } catch (Exception e) {
             log.error("error update issue " + issueKey, e);
-            throw new ServerException("Error update issue " + issueKey);
+            return false;
         }
+
+        return true;
     }
 
     private void deleteIssue(String issueKey, boolean deleteSubtasks) {
